@@ -4,13 +4,18 @@ import urllib2
 from bs4 import BeautifulSoup
 import json
 
+# futuro
+class Anime:
+    @staticmethod
+    def from_user(user_anime_entry):
+        pass
+
 """
 atributos iniciais
-  status
-  user_score
+  status (animes que tão no dropped sofrem punição?)
   type
   episodes (total)
-  aired
+  year (ver se a tag anime_start_date_string corresponde à data de lançamento)
   licensors (? pode ser ultil em uma possível oficialização onde a disponibilidade de transmissão local oficial é um fator)
   studios
   source (imagino que vai ter pouco impacto)
@@ -20,6 +25,19 @@ atributos iniciais
   public_score
   rank
   popularity
+  user_score (OBJETIVO)
+"""
+
+"""
+Atributos restantes:
+    licensors
+    studios
+    source
+    genres
+    duration
+    public_score
+    rank
+    popularity
 """
 
 """
@@ -50,3 +68,7 @@ def get_lista(usuario, status = Status.todos):
 
     soup = BeautifulSoup(pagina, 'lxml')
     return json.loads(soup.find(class_="list-table")["data-items"])
+
+l = get_lista("Master_Exploder")
+
+print l[0]
