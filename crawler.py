@@ -3,6 +3,7 @@
 import urllib2
 from bs4 import BeautifulSoup
 import json
+import datetime
 
 MAL_URL = "https://myanimelist.net"
 
@@ -10,37 +11,49 @@ MAL_URL = "https://myanimelist.net"
 class Anime:
     def __init__(self, user_entry):
         self.title = user_entry["anime_title"]
+        self.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
         self.status = user_entry["status"]
         self.type = user_entry["anime_media_type_string"]
         self.episodes = user_entry["anime_num_episodes"]
-        self.year = user_entry["anime_start_date_string"][-2:] #todo:? talvez converter pra int de 4 dígitos (1996, 2018, etc)
+        self.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
         self.rating = user_entry["anime_mpaa_rating_string"]
-        self.user_score = user_entry["score"]
-        
-        self.update_from_url(user_entry["anime_url"])
+        self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
+        self.update_from_url()
 
-    def update_from_url(self, anime_url):
+    def update_from_url(self):
         #todo: olhar se já tem na cache pra evitar bobeira
 
-        url = MAL_URL + anime_url
+        url = MAL_URL + self.url
         response = urllib2.urlopen(url.encode("UTF-8"))
         pagina = response.read()
         soup = BeautifulSoup(pagina, "lxml")
 
+        def get_info(atributo, is_list):
+            tag = soup.find(string = atributo + ":").parent
+
+            #Funções úteis
+            strip = lambda t: t.string.strip(" ,\n")
+            filtro = lambda s: len(s) > 0 and s not in ["None found", "add some"]
+
+            if is_list:
+                return filter(filtro, map(strip, list(tag.next_siblings)))
+            else:
+                return strip(tag.next_sibling)
+
+        #Super atoi
+        satoi = lambda string: int(filter(unicode.isdigit, string))
+
         #Information
-        def get_info(atributo):
-            #todo:? separar essas lambdas em suas devidas funções pra melhorar o espaço
-            return filter(lambda s: len(s) > 0 and s not in ["None found", "add some"], map(lambda t: t.string.strip(" ,\n"), list(soup.find(string=atributo + ":").parent.next_siblings)))
-        self.licensors = get_info("Licensors")
-        self.studios = get_info("Studios")
-        self.source = get_info("Source")
-        self.genres = get_info("Genres")
-        self.duration = get_info("Duration") #todo: reduzir de string pra um int
+        self.licensors = get_info("Licensors", True)
+        self.studios = get_info("Studios", True)
+        self.source = get_info("Source", False)
+        self.genres = get_info("Genres", True)
+        self.duration = satoi(get_info("Duration", False))
 
         #Statistics
-        atributos = ["Score", "Ranked", "Popularity"]
-        #todo pegar os atributos que faltam
-
+        self.public_score = float(soup.find(itemprop = "ratingValue").string)
+        self.rank = satoi(get_info("Ranked", False))
+        self.popularity = satoi(get_info("Popularity", False))
 
         #todo: inserir o anime na cache
 
@@ -95,6 +108,5 @@ def get_lista(usuario, status = Status.todos):
     return json.loads(soup.find(class_="list-table")["data-items"])
 
 u = get_lista(usuario)
-for e in u:
-    a = Anime(e)
-    print json.dumps(a.__dict__, indent=4)
+a = Anime(u[4])
+print json.dumps(a.__dict__, indent=4)
