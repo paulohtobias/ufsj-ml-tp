@@ -107,6 +107,42 @@ def get_lista(usuario, status = Status.todos):
     soup = BeautifulSoup(pagina, 'lxml')
     return json.loads(soup.find(class_="list-table")["data-items"])
 
+def salvar_animes(lista):
+	#Pegar a lista atual de animes do arquivo. 
+	arquivo = open("data/crawler/anime-list.txt","r")
+	linhas_arquivo = arquivo.readlines()
+	arquivo.close()
+	arquivo = open("data/crawler/anime-list.txt","a")
+	for item in lista:
+		a = Anime(item)
+		file_json = json.dumps(a.__dict__, indent=4)
+		dict = json.loads(file_json)
+		nome_anime = dict.get("title").encode("utf-8")
+		
+		#Criar novo arquivo de anime
+		def criar_novo_anime(nome_anime, file_json, linha=nome_anime):
+			arq = open("data/animes/"+nome_anime+".json","w")
+			arq.write(file_json)
+			arq.close()
+			arquivo.write(linha.encode("utf-8")+"\n")
+			print nome_anime
+		
+		if(linhas_arquivo == []):
+			criar_novo_anime(nome_anime,file_json)
+		else:
+			achou = False
+			for linha in linhas_arquivo:
+				if(nome_anime == linha):
+					achou = False
+					break
+			if not(achou):
+				criar_novo_anime(nome_anime,file_json,linha)
+	arquivo.close()
+
 u = get_lista(usuario)
-a = Anime(u[4])
-print json.dumps(a.__dict__, indent=4)
+#a = Anime(u[4])
+#j = json.dumps(a.__dict__, indent=4)
+#dict = json.loads(j)
+#print dict.get("title")
+
+#salvar_animes(u)
