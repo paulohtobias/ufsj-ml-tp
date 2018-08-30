@@ -23,7 +23,8 @@
 18677: Yuusha ni Narenakatta Ore wa Shibushibu Shuushoku wo Ketsui Shimashita.
 11617: High School DxD
 1887: Lucky☆Star
-1735: Naruto: Shippuuden34933: Kakegurui
+1735: Naruto: Shippuuden
+34933: Kakegurui
 5042: Kiss x Sis
 7593: Kiss x Sis (TV)
 23281: Psycho-Pass 2
@@ -56,14 +57,4 @@
 28223: Death Parade
 185: Initial D First Stage
 22535: Kiseijuu: Sei no Kakuritsu
-9756: Mahou Shoujo Madoka★Magica36456: Boku no Hero Academia 3rd Season
-6746: Durarara!!
-37141: Hataraku Saibou
-967: Hokuto no Ken
-36548: Kokkoku
-33489: Little Witch Academia (TV)
-35078: Mitsuboshi Colors
-34914: New Game!!
-35484: Osake wa Fuufu ni Natte kara
-35330: Poputepipikku
-32262: Renai Boukun
+9756: Mahou Shoujo Madoka★Magica

@@ -19,6 +19,7 @@ class Anime:
         self.rating = user_entry["anime_mpaa_rating_string"]
         self.id = user_entry["anime_id"]
         self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
+        #print self.id
         self.update_from_url()
 
     def update_from_url(self):
@@ -96,7 +97,7 @@ class Status:
     plan = "6" #Não sei nem se faz sentido esse.
     todos = "7"
 
-usuario = "Bernardomj"
+usuario = "Master_Exploder"
 
 def get_lista(usuario, status = Status.todos):
     #todo: deixar retornar mais de um status por vez?
@@ -122,7 +123,6 @@ def salvar_animes(lista):
 		arquivo.close()
 	carregar_lista_animes()
 	arquivo = open("data/crawler/anime-list.txt","a")
-	i = 0
 	for item in lista:
 		anime = Anime(item)
 		file_json = json.dumps(anime.__dict__, indent=4)
@@ -134,9 +134,8 @@ def salvar_animes(lista):
 			arq = open("data/animes/"+id_anime+".json","w")
 			arq.write(file_json)
 			arq.close()
-			arquivo.write(id_anime+": "+nome_anime)
-			if(i<len(lista)-1):
-				arquivo.write("\n")
+			anime_entry = id_anime+": "+nome_anime+"\n"
+			arquivo.write(anime_entry)
 			print id_anime+": "+nome_anime
 		
 		if(linhas_arquivo == []):
@@ -149,7 +148,6 @@ def salvar_animes(lista):
 					break
 			if not(achou):
 				criar_novo_anime(id_anime,nome_anime,file_json,linha)
-		i += 1
 	arquivo.close()
 
 u = get_lista(usuario)
