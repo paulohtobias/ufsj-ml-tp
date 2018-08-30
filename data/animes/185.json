@@ -1,0 +1,31 @@
+{
+    "status": 6, 
+    "rating": "PG-13", 
+    "studios": [
+        "Studio Gallop", 
+        "Studio Comet"
+    ], 
+    "licensors": [
+        "Funimation", 
+        "TOKYOPOP"
+    ], 
+    "user_score": 0, 
+    "title": "Initial D First Stage", 
+    "url": "/anime/185/Initial_D_First_Stage", 
+    "popularity": 738, 
+    "public_score": 8.29, 
+    "genres": [
+        "Action", 
+        "Cars", 
+        "Drama", 
+        "Seinen", 
+        "Sports"
+    ], 
+    "rank": 248, 
+    "source": "Manga", 
+    "episodes": 26, 
+    "year": 1998, 
+    "duration": 25, 
+    "type": "TV", 
+    "id": 185
+}

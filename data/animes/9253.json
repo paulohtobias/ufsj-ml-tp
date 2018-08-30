@@ -1,0 +1,26 @@
+{
+    "status": 2, 
+    "rating": "PG-13", 
+    "studios": [
+        "White Fox"
+    ], 
+    "licensors": [
+        "Funimation"
+    ], 
+    "user_score": 9, 
+    "title": "Steins;Gate", 
+    "url": "/anime/9253/Steins_Gate", 
+    "popularity": 7, 
+    "public_score": 9.14, 
+    "genres": [
+        "Thriller", 
+        "Sci-Fi"
+    ], 
+    "rank": 4, 
+    "source": "Visual novel", 
+    "episodes": 24, 
+    "year": 2011, 
+    "duration": 24, 
+    "type": "TV", 
+    "id": 9253
+}

@@ -1,0 +1,32 @@
+{
+    "status": 2, 
+    "rating": "R", 
+    "studios": [
+        "Sunrise"
+    ], 
+    "licensors": [
+        "Funimation", 
+        "Bandai Entertainment"
+    ], 
+    "user_score": 9, 
+    "title": "Code Geass: Hangyaku no Lelouch", 
+    "url": "/anime/1575/Code_Geass__Hangyaku_no_Lelouch", 
+    "popularity": 9, 
+    "public_score": 8.78, 
+    "genres": [
+        "Action", 
+        "Military", 
+        "Sci-Fi", 
+        "Super Power", 
+        "Drama", 
+        "Mecha", 
+        "School"
+    ], 
+    "rank": 34, 
+    "source": "Original", 
+    "episodes": 25, 
+    "year": 2006, 
+    "duration": 24, 
+    "type": "TV", 
+    "id": 1575
+}

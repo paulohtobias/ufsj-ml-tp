@@ -17,6 +17,7 @@ class Anime:
         self.episodes = user_entry["anime_num_episodes"]
         self.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
         self.rating = user_entry["anime_mpaa_rating_string"]
+        self.id = user_entry["anime_id"]
         self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
         self.update_from_url()
 
@@ -95,7 +96,7 @@ class Status:
     plan = "6" #Não sei nem se faz sentido esse.
     todos = "7"
 
-usuario = "Master_Exploder"
+usuario = "Bernardomj"
 
 def get_lista(usuario, status = Status.todos):
     #todo: deixar retornar mais de um status por vez?
@@ -108,41 +109,54 @@ def get_lista(usuario, status = Status.todos):
     return json.loads(soup.find(class_="list-table")["data-items"])
 
 def salvar_animes(lista):
+	linhas_arquivo = []
 	#Pegar a lista atual de animes do arquivo. 
-	arquivo = open("data/crawler/anime-list.txt","r")
-	linhas_arquivo = arquivo.readlines()
-	arquivo.close()
+	def carregar_lista_animes():
+		arquivo = open("data/crawler/anime-list.txt","r")
+		conteudo_arquivo = arquivo.readlines()
+		for linha in conteudo_arquivo:
+			j = 0
+			while(linha[j] != ":"):
+				j += 1
+			linhas_arquivo.append(linha[:j])
+		arquivo.close()
+	carregar_lista_animes()
 	arquivo = open("data/crawler/anime-list.txt","a")
+	i = 0
 	for item in lista:
-		a = Anime(item)
-		file_json = json.dumps(a.__dict__, indent=4)
+		anime = Anime(item)
+		file_json = json.dumps(anime.__dict__, indent=4)
 		dict = json.loads(file_json)
-		nome_anime = dict.get("title").encode("utf-8")
-		
+		nome_anime = anime.title.encode("utf-8")
+		id_anime = str(anime.id)
 		#Criar novo arquivo de anime
-		def criar_novo_anime(nome_anime, file_json, linha=nome_anime):
-			arq = open("data/animes/"+nome_anime+".json","w")
+		def criar_novo_anime(id_anime,nome_anime, file_json, linha=nome_anime):
+			arq = open("data/animes/"+id_anime+".json","w")
 			arq.write(file_json)
 			arq.close()
-			arquivo.write(linha.encode("utf-8")+"\n")
-			print nome_anime
+			arquivo.write(id_anime+": "+nome_anime)
+			if(i<len(lista)-1):
+				arquivo.write("\n")
+			print id_anime+": "+nome_anime
 		
 		if(linhas_arquivo == []):
-			criar_novo_anime(nome_anime,file_json)
+			criar_novo_anime(id_anime,nome_anime,file_json)
 		else:
 			achou = False
 			for linha in linhas_arquivo:
-				if(nome_anime == linha):
-					achou = False
+				if(id_anime == linha):
+					achou = True
 					break
 			if not(achou):
-				criar_novo_anime(nome_anime,file_json,linha)
+				criar_novo_anime(id_anime,nome_anime,file_json,linha)
+		i += 1
 	arquivo.close()
 
 u = get_lista(usuario)
 #a = Anime(u[4])
 #j = json.dumps(a.__dict__, indent=4)
+#print j
 #dict = json.loads(j)
 #print dict.get("title")
 
-#salvar_animes(u)
+salvar_animes(u)

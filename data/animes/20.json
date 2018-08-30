@@ -1,0 +1,30 @@
+{
+    "status": 3, 
+    "rating": "PG-13", 
+    "studios": [
+        "Studio Pierrot"
+    ], 
+    "licensors": [
+        "Viz Media"
+    ], 
+    "user_score": 8, 
+    "title": "Naruto", 
+    "url": "/anime/20/Naruto", 
+    "popularity": 10, 
+    "public_score": 7.89, 
+    "genres": [
+        "Action", 
+        "Adventure", 
+        "Comedy", 
+        "Super Power", 
+        "Martial Arts", 
+        "Shounen"
+    ], 
+    "rank": 716, 
+    "source": "Manga", 
+    "episodes": 220, 
+    "year": 2002, 
+    "duration": 23, 
+    "type": "TV", 
+    "id": 20
+}

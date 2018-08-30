@@ -1,0 +1,27 @@
+{
+    "status": 1, 
+    "rating": "R", 
+    "studios": [
+        "Geno Studio"
+    ], 
+    "licensors": [], 
+    "user_score": 8, 
+    "title": "Kokkoku", 
+    "url": "/anime/36548/Kokkoku", 
+    "popularity": 944, 
+    "public_score": 7.19, 
+    "genres": [
+        "Psychological", 
+        "Supernatural", 
+        "Drama", 
+        "Mystery", 
+        "Seinen"
+    ], 
+    "rank": 2853, 
+    "source": "Manga", 
+    "episodes": 12, 
+    "year": 2018, 
+    "duration": 23, 
+    "type": "TV", 
+    "id": 36548
+}

@@ -1,0 +1,31 @@
+{
+    "status": 2, 
+    "rating": "R", 
+    "studios": [
+        "Studio Pierrot"
+    ], 
+    "licensors": [
+        "Funimation"
+    ], 
+    "user_score": 8, 
+    "title": "Tokyo Ghoul", 
+    "url": "/anime/22319/Tokyo_Ghoul", 
+    "popularity": 6, 
+    "public_score": 8.0, 
+    "genres": [
+        "Action", 
+        "Mystery", 
+        "Horror", 
+        "Psychological", 
+        "Supernatural", 
+        "Drama", 
+        "Seinen"
+    ], 
+    "rank": 562, 
+    "source": "Manga", 
+    "episodes": 12, 
+    "year": 2014, 
+    "duration": 24, 
+    "type": "TV", 
+    "id": 22319
+}

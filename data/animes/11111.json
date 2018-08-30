@@ -1,0 +1,29 @@
+{
+    "status": 2, 
+    "rating": "R", 
+    "studios": [
+        "P.A. Works"
+    ], 
+    "licensors": [
+        "Sentai Filmworks"
+    ], 
+    "user_score": 6, 
+    "title": "Another", 
+    "url": "/anime/11111/Another", 
+    "popularity": 27, 
+    "public_score": 7.75, 
+    "genres": [
+        "Mystery", 
+        "Horror", 
+        "Supernatural", 
+        "Thriller", 
+        "School"
+    ], 
+    "rank": 975, 
+    "source": "Novel", 
+    "episodes": 12, 
+    "year": 2012, 
+    "duration": 24, 
+    "type": "TV", 
+    "id": 11111
+}

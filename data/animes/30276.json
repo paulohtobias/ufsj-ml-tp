@@ -1,0 +1,31 @@
+{
+    "status": 2, 
+    "rating": "R", 
+    "studios": [
+        "Madhouse"
+    ], 
+    "licensors": [
+        "Viz Media"
+    ], 
+    "user_score": 9, 
+    "title": "One Punch Man", 
+    "url": "/anime/30276/One_Punch_Man", 
+    "popularity": 5, 
+    "public_score": 8.72, 
+    "genres": [
+        "Action", 
+        "Sci-Fi", 
+        "Comedy", 
+        "Parody", 
+        "Super Power", 
+        "Supernatural", 
+        "Seinen"
+    ], 
+    "rank": 46, 
+    "source": "Web manga", 
+    "episodes": 12, 
+    "year": 2015, 
+    "duration": 24, 
+    "type": "TV", 
+    "id": 30276
+}

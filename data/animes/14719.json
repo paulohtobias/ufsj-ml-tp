@@ -1,0 +1,29 @@
+{
+    "status": 2, 
+    "rating": "R", 
+    "studios": [
+        "David Production"
+    ], 
+    "licensors": [
+        "Viz Media"
+    ], 
+    "user_score": 7, 
+    "title": "JoJo no Kimyou na Bouken (TV)", 
+    "url": "/anime/14719/JoJo_no_Kimyou_na_Bouken_TV", 
+    "popularity": 160, 
+    "public_score": 8.4, 
+    "genres": [
+        "Action", 
+        "Adventure", 
+        "Supernatural", 
+        "Vampire", 
+        "Shounen"
+    ], 
+    "rank": 163, 
+    "source": "Manga", 
+    "episodes": 26, 
+    "year": 2012, 
+    "duration": 24, 
+    "type": "TV", 
+    "id": 14719
+}
