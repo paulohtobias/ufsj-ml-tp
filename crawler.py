@@ -9,7 +9,7 @@ import os
 MAL_URL = "https://myanimelist.net"
 ANIMES_PATH = "data/animes/"
 usuario = "Master_Exploder"
-USER_PATH = "data/users/"+usuario+"/"
+USER_PATH = "data/users/" + usuario + "/"
 # futuro
 class Avaliacao:
     def __init__(self,user_entry,id_anime):
@@ -23,7 +23,7 @@ class Avaliacao:
         file_json = json.dumps(self.__dict__, indent=4)
         if not(os.path.exists(USER_PATH)):
             os.makedirs(USER_PATH)
-        arq = open(USER_PATH+str(id_anime)+".json","w")
+        arq = open(USER_PATH + str(id_anime) + ".json", "w")
         arq.write(file_json)
         arq.close()
 
@@ -44,8 +44,9 @@ class Anime:
 
     def update_from_url(self):
         #Verificar se o anime já está salvo na cache
+        #todo: with
         try:
-            arquivo = open(ANIMES_PATH+str(self.id)+".json","r")
+            arquivo = open(ANIMES_PATH+str(self.id) + ".json", "r")
             arquivo.close()
             return
         except: 
@@ -93,13 +94,13 @@ class Anime:
         id_anime = str(self.id)
         if not(os.path.exists(ANIMES_PATH)):
             os.makedirs(ANIMES_PATH)
-        arq = open(ANIMES_PATH+id_anime+".json","w")
+        arq = open(ANIMES_PATH + id_anime + ".json", "w")
         arq.write(file_json)
         print nome_anime
         arq.close()
 
     def get_nome_arq(self):
-        return "data/animes/"+self.id+".json"
+        return "data/animes/" + self.id + ".json"
     #todo
     #def __str__(self):
 
@@ -146,6 +147,6 @@ def get_lista(usuario, status = Status.todos):
     pagina = response.read()
 
     soup = BeautifulSoup(pagina, 'lxml')
-    return map(lambda ue: Anime(ue), json.loads(soup.find(class_="list-table")["data-items"]))
+    return map(lambda ue: Anime(ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
 
 get_lista(usuario)
