@@ -4,27 +4,53 @@ import urllib2
 from bs4 import BeautifulSoup
 import json
 import datetime
+import os
 
 MAL_URL = "https://myanimelist.net"
-
+ANIMES_PATH = "data/animes/"
+usuario = "Master_Exploder"
+USER_PATH = "data/users/"+usuario+"/"
 # futuro
+class Avaliacao:
+    def __init__(self,user_entry,id_anime):
+        self.num_watched_episodes = user_entry["num_watched_episodes"]
+        self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
+        self.status = user_entry["status"]
+        
+        self.criar_nova_avaliacao(id_anime)
+    
+    def criar_nova_avaliacao(self,id_anime):
+        file_json = json.dumps(self.__dict__, indent=4)
+        if not(os.path.exists(USER_PATH)):
+            os.makedirs(USER_PATH)
+        arq = open(USER_PATH+str(id_anime)+".json","w")
+        arq.write(file_json)
+        arq.close()
+
 class Anime:
     def __init__(self, user_entry):
         self.title = user_entry["anime_title"]
         self.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
-        self.status = user_entry["status"]
         self.type = user_entry["anime_media_type_string"]
         self.episodes = user_entry["anime_num_episodes"]
         self.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
         self.rating = user_entry["anime_mpaa_rating_string"]
         self.id = user_entry["anime_id"]
-        self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
-        #print self.id
+        
+        #Criar nova avaliação do usuario para o anime
+        Avaliacao(user_entry,self.id)
+        
         self.update_from_url()
 
     def update_from_url(self):
-        #todo: olhar se já tem na cache pra evitar bobeira
-
+        #Verificar se o anime já está salvo na cache
+        try:
+            arquivo = open(ANIMES_PATH+str(self.id)+".json","r")
+            arquivo.close()
+            return
+        except: 
+            pass
+            
         url = MAL_URL + self.url
         response = urllib2.urlopen(url.encode("UTF-8"))
         pagina = response.read()
@@ -57,10 +83,18 @@ class Anime:
         self.rank = satoi(get_info("Ranked", False))
         self.popularity = satoi(get_info("Popularity", False))
 
-        #todo: inserir o anime na cache
-
-    #todo
-    #def __str__(self):
+        #Criar novo anime na cache
+        self.criar_novo_anime()
+        
+        
+    def criar_novo_anime(self):
+        file_json = json.dumps(self.__dict__, indent=4)
+        nome_anime = self.title.encode("utf-8")
+        id_anime = str(self.id)
+        arq = open(ANIMES_PATH+id_anime+".json","w")
+        arq.write(file_json)
+        print nome_anime
+        arq.close()
 
 """
 atributos iniciais
@@ -97,8 +131,6 @@ class Status:
     plan = "6" #Não sei nem se faz sentido esse.
     todos = "7"
 
-usuario = "Master_Exploder"
-
 def get_lista(usuario, status = Status.todos):
     #todo: deixar retornar mais de um status por vez?
     url = MAL_URL + "/animelist/" + usuario + "?status=" + status
@@ -107,22 +139,14 @@ def get_lista(usuario, status = Status.todos):
     pagina = response.read()
 
     soup = BeautifulSoup(pagina, 'lxml')
-    return json.loads(soup.find(class_="list-table")["data-items"])
+    lista = json.loads(soup.find(class_="list-table")["data-items"])
+    i = 0
+    for item in lista:
+        Anime(item)
 
+
+	
 def salvar_animes(lista):
-	linhas_arquivo = []
-	#Pegar a lista atual de animes do arquivo. 
-	def carregar_lista_animes():
-		arquivo = open("data/crawler/anime-list.txt","r")
-		conteudo_arquivo = arquivo.readlines()
-		for linha in conteudo_arquivo:
-			j = 0
-			while(linha[j] != ":"):
-				j += 1
-			linhas_arquivo.append(linha[:j])
-		arquivo.close()
-	carregar_lista_animes()
-	arquivo = open("data/crawler/anime-list.txt","a")
 	for item in lista:
 		anime = Anime(item)
 		file_json = json.dumps(anime.__dict__, indent=4)
@@ -148,13 +172,12 @@ def salvar_animes(lista):
 					break
 			if not(achou):
 				criar_novo_anime(id_anime,nome_anime,file_json,linha)
-	arquivo.close()
 
-u = get_lista(usuario)
+get_lista(usuario)
 #a = Anime(u[4])
 #j = json.dumps(a.__dict__, indent=4)
 #print j
 #dict = json.loads(j)
 #print dict.get("title")
 
-salvar_animes(u)
+#salvar_animes(u)

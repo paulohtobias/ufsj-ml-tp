@@ -1,5 +1,4 @@
 {
-    "status": 1, 
     "rating": "R", 
     "studios": [
         "Tatsunoko Production"
@@ -7,7 +6,6 @@
     "licensors": [
         "Funimation"
     ], 
-    "user_score": 0, 
     "title": "Psycho-Pass 2", 
     "url": "/anime/23281/Psycho-Pass_2", 
     "popularity": 183, 
@@ -18,7 +16,7 @@
         "Police", 
         "Psychological"
     ], 
-    "rank": 1562, 
+    "rank": 1561, 
     "source": "Original", 
     "episodes": 11, 
     "year": 2014, 

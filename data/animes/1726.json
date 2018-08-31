@@ -1,5 +1,4 @@
 {
-    "status": 2, 
     "rating": "R", 
     "studios": [
         "Madhouse"
@@ -8,17 +7,16 @@
         "ADV Films", 
         "Funimation"
     ], 
-    "user_score": 6, 
     "title": "Devil May Cry", 
     "url": "/anime/1726/Devil_May_Cry", 
-    "popularity": 381, 
+    "popularity": 383, 
     "public_score": 7.1, 
     "genres": [
         "Action", 
         "Demons", 
         "Fantasy"
     ], 
-    "rank": 3202, 
+    "rank": 3203, 
     "source": "Game", 
     "episodes": 12, 
     "year": 2007, 

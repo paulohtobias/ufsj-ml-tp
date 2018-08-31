@@ -1,5 +1,4 @@
 {
-    "status": 2, 
     "rating": "PG", 
     "studios": [
         "Studio Pierrot"
@@ -7,7 +6,6 @@
     "licensors": [
         "Viz Media"
     ], 
-    "user_score": 6, 
     "title": "Blue Dragon", 
     "url": "/anime/2142/Blue_Dragon", 
     "popularity": 2145, 
@@ -18,7 +16,7 @@
         "Fantasy", 
         "Supernatural"
     ], 
-    "rank": 5543, 
+    "rank": 5542, 
     "source": "Game", 
     "episodes": 51, 
     "year": 2007, 

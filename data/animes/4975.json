@@ -1,5 +1,4 @@
 {
-    "status": 2, 
     "rating": "R", 
     "studios": [
         "Madhouse"
@@ -7,7 +6,6 @@
     "licensors": [
         "Funimation"
     ], 
-    "user_score": 6, 
     "title": "Ch\u00e4oS;HEAd", 
     "url": "/anime/4975/Ch\u00e4oS_HEAd", 
     "popularity": 352, 
@@ -19,7 +17,7 @@
         "Sci-Fi", 
         "Supernatural"
     ], 
-    "rank": 5544, 
+    "rank": 5543, 
     "source": "Visual novel", 
     "episodes": 12, 
     "year": 2008, 

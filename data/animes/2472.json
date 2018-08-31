@@ -1,5 +1,4 @@
 {
-    "status": 2, 
     "rating": "PG-13", 
     "studios": [
         "Studio Pierrot"
@@ -7,7 +6,6 @@
     "licensors": [
         "Viz Media"
     ], 
-    "user_score": 7, 
     "title": "Naruto: Shippuuden Movie 1", 
     "url": "/anime/2472/Naruto__Shippuuden_Movie_1", 
     "popularity": 611, 
@@ -19,7 +17,7 @@
         "Fantasy", 
         "Shounen"
     ], 
-    "rank": 1968, 
+    "rank": 1969, 
     "source": "Manga", 
     "episodes": 1, 
     "year": 2007, 

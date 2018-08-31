@@ -1,5 +1,4 @@
 {
-    "status": 2, 
     "rating": "R+", 
     "studios": [
         "Asread"
@@ -7,7 +6,6 @@
     "licensors": [
         "Funimation"
     ], 
-    "user_score": 7, 
     "title": "Mirai Nikki (TV)", 
     "url": "/anime/10620/Mirai_Nikki_TV", 
     "popularity": 12, 
@@ -20,7 +18,7 @@
         "Mystery", 
         "Shounen"
     ], 
-    "rank": 763, 
+    "rank": 764, 
     "source": "Manga", 
     "episodes": 26, 
     "year": 2011, 

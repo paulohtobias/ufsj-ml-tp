@@ -1,11 +1,9 @@
 {
-    "status": 1, 
     "rating": "R", 
     "studios": [
         "MAPPA"
     ], 
     "licensors": [], 
-    "user_score": 9, 
     "title": "Kakegurui", 
     "url": "/anime/34933/Kakegurui", 
     "popularity": 230, 
@@ -18,7 +16,7 @@
         "School", 
         "Shounen"
     ], 
-    "rank": 1500, 
+    "rank": 1498, 
     "source": "Manga", 
     "episodes": 12, 
     "year": 2017, 
