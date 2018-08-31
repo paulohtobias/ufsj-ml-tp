@@ -28,6 +28,7 @@ class Avaliacao:
         arq.close()
 
 class Anime:
+	
     def __init__(self, user_entry):
         self.title = user_entry["anime_title"]
         self.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
@@ -96,6 +97,11 @@ class Anime:
         print nome_anime
         arq.close()
 
+	def get_nome_arq(self):
+		return "data/animes/"+self.id+".json"
+    #todo
+    #def __str__(self):
+
 """
 atributos iniciais
   status (animes que tão no dropped sofrem punição?)
@@ -139,10 +145,7 @@ def get_lista(usuario, status = Status.todos):
     pagina = response.read()
 
     soup = BeautifulSoup(pagina, 'lxml')
-    lista = json.loads(soup.find(class_="list-table")["data-items"])
-    i = 0
-    for item in lista:
-        Anime(item)
+    return map(lambda ue: Anime(ue), json.loads(soup.find(class_="list-table")["data-items"]))
 
 
 	
