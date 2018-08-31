@@ -28,7 +28,6 @@ class Avaliacao:
         arq.close()
 
 class Anime:
-	
     def __init__(self, user_entry):
         self.title = user_entry["anime_title"]
         self.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
@@ -92,13 +91,15 @@ class Anime:
         file_json = json.dumps(self.__dict__, indent=4)
         nome_anime = self.title.encode("utf-8")
         id_anime = str(self.id)
+        if not(os.path.exists(ANIMES_PATH)):
+            os.makedirs(ANIMES_PATH)
         arq = open(ANIMES_PATH+id_anime+".json","w")
         arq.write(file_json)
         print nome_anime
         arq.close()
 
-	def get_nome_arq(self):
-		return "data/animes/"+self.id+".json"
+    def get_nome_arq(self):
+        return "data/animes/"+self.id+".json"
     #todo
     #def __str__(self):
 
@@ -147,40 +148,4 @@ def get_lista(usuario, status = Status.todos):
     soup = BeautifulSoup(pagina, 'lxml')
     return map(lambda ue: Anime(ue), json.loads(soup.find(class_="list-table")["data-items"]))
 
-
-	
-def salvar_animes(lista):
-	for item in lista:
-		anime = Anime(item)
-		file_json = json.dumps(anime.__dict__, indent=4)
-		dict = json.loads(file_json)
-		nome_anime = anime.title.encode("utf-8")
-		id_anime = str(anime.id)
-		#Criar novo arquivo de anime
-		def criar_novo_anime(id_anime,nome_anime, file_json, linha=nome_anime):
-			arq = open("data/animes/"+id_anime+".json","w")
-			arq.write(file_json)
-			arq.close()
-			anime_entry = id_anime+": "+nome_anime+"\n"
-			arquivo.write(anime_entry)
-			print id_anime+": "+nome_anime
-		
-		if(linhas_arquivo == []):
-			criar_novo_anime(id_anime,nome_anime,file_json)
-		else:
-			achou = False
-			for linha in linhas_arquivo:
-				if(id_anime == linha):
-					achou = True
-					break
-			if not(achou):
-				criar_novo_anime(id_anime,nome_anime,file_json,linha)
-
 get_lista(usuario)
-#a = Anime(u[4])
-#j = json.dumps(a.__dict__, indent=4)
-#print j
-#dict = json.loads(j)
-#print dict.get("title")
-
-#salvar_animes(u)
