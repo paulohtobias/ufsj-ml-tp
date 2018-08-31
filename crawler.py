@@ -9,6 +9,7 @@ MAL_URL = "https://myanimelist.net"
 
 # futuro
 class Anime:
+	
     def __init__(self, user_entry):
         self.title = user_entry["anime_title"]
         self.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
@@ -59,6 +60,8 @@ class Anime:
 
         #todo: inserir o anime na cache
 
+	def get_nome_arq(self):
+		return "data/animes/"+self.id+".json"
     #todo
     #def __str__(self):
 
@@ -107,7 +110,7 @@ def get_lista(usuario, status = Status.todos):
     pagina = response.read()
 
     soup = BeautifulSoup(pagina, 'lxml')
-    return json.loads(soup.find(class_="list-table")["data-items"])
+    return map(lambda ue: Anime(ue), json.loads(soup.find(class_="list-table")["data-items"]))
 
 def salvar_animes(lista):
 	linhas_arquivo = []
