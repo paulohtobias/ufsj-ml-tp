@@ -8,12 +8,11 @@ import os
 
 MAL_URL = "https://myanimelist.net"
 ANIMES_PATH = "data/animes/"
-usuario = "Bernardomj"
+usuario = "Zarem101"
 USER_PATH = "data/users/" + usuario + "/"
 
-# futuro
 class Avaliacao:
-	def __init__(self,user_entry, id_anime):
+	def __init__(self, user_entry, id_anime):
 		self.num_watched_episodes = user_entry["num_watched_episodes"]
 		self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
 		self.status = user_entry["status"]
@@ -28,19 +27,34 @@ class Avaliacao:
 			arq.write(file_json)
 
 class Anime:
-	def __init__(self, user_entry):
-		self.title = user_entry["anime_title"]
-		self.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
-		self.type = user_entry["anime_media_type_string"]
-		self.episodes = user_entry["anime_num_episodes"]
-		self.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
-		self.rating = user_entry["anime_mpaa_rating_string"]
-		self.id = user_entry["anime_id"]
+	@staticmethod
+	def from_url(url):
+		anime.url = url
+
+		#todo: pegar title, type, episodes, year, rating e id direto da página do anime
+
+		anime.update_from_url()
+
+		return anime
+
+	@staticmethod
+	def from_user_entry(user_entry):
+		anime = Anime()
+
+		anime.title = user_entry["anime_title"]
+		anime.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
+		anime.type = user_entry["anime_media_type_string"]
+		anime.episodes = user_entry["anime_num_episodes"]
+		anime.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
+		anime.rating = user_entry["anime_mpaa_rating_string"]
+		anime.id = user_entry["anime_id"]
 		
 		#Criar nova avaliação do usuario para o anime
-		Avaliacao(user_entry, self.id)
+		Avaliacao(user_entry, anime.id)
 		
-		self.update_from_url()
+		anime.update_from_url()
+
+		return anime
 
 	def update_from_url(self):
 		#Verificar se o anime já está salvo na cache
@@ -146,6 +160,6 @@ def get_lista(usuario, status = Status.todos):
 	pagina = response.read()
 
 	soup = BeautifulSoup(pagina, 'lxml')
-	return map(lambda ue: Anime(ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
+	return map(lambda ue: Anime.from_user_entry(ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
 
 u = get_lista(usuario)

@@ -1,5 +1,7 @@
-import crawler
+# -*- coding: utf-8 -*-
 
+import sys
+import crawler
 import urllib2
 from bs4 import BeautifulSoup as bs
 
@@ -24,4 +26,8 @@ def fill_database(start_page, num_pages):
 		anime_links.extend([x.get("href")[len(MAL_URL):] for x in links])
 
 	return anime_links
-print fill_database(0,5)
+
+if __name__ == "__main__":
+	pagina_inicial = int(sys.argv[1])
+	qtd_paginas = int(sys.argv[2])
+	print fill_database(pagina_inicial, qtd_paginas)
