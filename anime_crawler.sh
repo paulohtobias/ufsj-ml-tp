@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TETO=2 #Total de páginas
+TETO=1 #Total de páginas
 PAGINA=0
 while [  $PAGINA -lt $TETO ];
 do

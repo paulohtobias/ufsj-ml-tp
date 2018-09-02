@@ -25,7 +25,8 @@ def fill_database(start_page, num_pages):
 		# lista global de animes
 		anime_links.extend([x.get("href")[len(MAL_URL):] for x in links])
 
-	return anime_links
+	for link in anime_links:
+		crawler.Anime.from_url(link)
 
 if __name__ == "__main__":
 	pagina_inicial = int(sys.argv[1])

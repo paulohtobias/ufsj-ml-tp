@@ -29,9 +29,25 @@ class Avaliacao:
 class Anime:
 	@staticmethod
 	def from_url(url):
+		anime = Anime()
+
 		anime.url = url
 
-		#todo: pegar title, type, episodes, year, rating e id direto da página do anime
+		response = urllib2.urlopen((MAL_URL + url).encode("UTF-8"))
+		soup = BeautifulSoup(response.read(), "html5lib")
+
+		def get_year():
+			s = Anime.get_info(soup, "Aired", False)
+			print s
+			i = s.find(",") + 2
+			return int(s[i : i + 4])
+
+		anime.title = soup.find(itemprop = "name").string
+		anime.type = Anime.get_info(soup, "Type", False)
+		anime.episodes = Anime.get_info(soup, "Episodes", False)
+		anime.year = get_year()
+		anime.rating = Anime.get_info(soup, "Rating", False).split(" - ")[0]
+		anime.id = int(url.split("/")[2])
 
 		anime.update_from_url()
 
@@ -70,18 +86,6 @@ class Anime:
 			pagina = response.read()
 			soup = BeautifulSoup(pagina, "html5lib")
 
-			def get_info(atributo, is_list):
-				tag = soup.find(string = atributo + ":").parent
-
-				#Funções úteis
-				strip = lambda t: t.string.strip(" ,\n")
-				filtro = lambda s: len(s) > 0 and s not in ["None found", "add some"]
-
-				if is_list:
-					return filter(filtro, map(strip, list(tag.next_siblings)))
-				else:
-					return strip(tag.next_sibling)
-
 			#Super atoi
 			def satoi(string):
 				try:
@@ -90,16 +94,16 @@ class Anime:
 					return None
 
 			#Information
-			self.licensors = get_info("Licensors", True)
-			self.studios = get_info("Studios", True)
-			self.source = get_info("Source", False)
-			self.genres = get_info("Genres", True)
-			self.duration = satoi(get_info("Duration", False))
+			self.licensors = Anime.get_info(soup, "Licensors", True)
+			self.studios = Anime.get_info(soup, "Studios", True)
+			self.source = Anime.get_info(soup, "Source", False)
+			self.genres = Anime.get_info(soup, "Genres", True)
+			self.duration = satoi(Anime.get_info(soup, "Duration", False))
 
 			#Statistics
 			self.public_score = float(soup.find(itemprop = "ratingValue").string)
-			self.rank = satoi(get_info("Ranked", False))
-			self.popularity = satoi(get_info("Popularity", False))
+			self.rank = satoi(Anime.get_info(soup, "Ranked", False))
+			self.popularity = satoi(Anime.get_info(soup, "Popularity", False))
 
 			#Criar novo anime na cache
 			self.criar_novo_anime()
@@ -110,12 +114,23 @@ class Anime:
 			os.makedirs(ANIMES_PATH)
 		with open(self.get_nome_arq(), "w") as arq:
 			arq.write(file_json)
-			print self.title.encode("utf-8")
+			print "%7d: %s" % (self.id, self.title.encode("utf-8"))
 
 	def get_nome_arq(self):
 		return ANIMES_PATH + str(self.id) + ".json"
-	#todo
-	#def __str__(self):
+	
+	@staticmethod
+	def get_info(soup, atributo, is_list):
+		tag = soup.find(string = atributo + ":").parent
+
+		#Funções úteis
+		strip = lambda t: t.string.strip(" ,\n")
+		filtro = lambda s: len(s) > 0 and s not in ["None found", "add some"]
+
+		if is_list:
+			return filter(filtro, map(strip, list(tag.next_siblings)))
+		else:
+			return strip(tag.next_sibling)
 
 """
 atributos iniciais
@@ -162,4 +177,4 @@ def get_lista(usuario, status = Status.todos):
 	soup = BeautifulSoup(pagina, 'lxml')
 	return map(lambda ue: Anime.from_user_entry(ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
 
-u = get_lista(usuario)
+#u = get_lista(usuario)
