@@ -64,12 +64,14 @@ class Anime:
 		anime.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
 		anime.rating = user_entry["anime_mpaa_rating_string"]
 		anime.id = user_entry["anime_id"]
+		try:
+			#Criar nova avaliação do usuario para o anime
+			Avaliacao(user_entry, anime.id)
 		
-		#Criar nova avaliação do usuario para o anime
-		Avaliacao(user_entry, anime.id)
-		
-		anime.update_from_url()
-
+			anime.update_from_url()
+		except:
+			return None
+			
 		return anime
 
 	def update_from_url(self):
