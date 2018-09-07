@@ -60,3 +60,4 @@ target/
 # Project files
 .vscode/
 data/
+log/

@@ -6,13 +6,13 @@ import crawler
 import urllib2
 from bs4 import BeautifulSoup as bs
 
-#definicoes
-MAL_URL = "https://myanimelist.net"
+# definicoes
+MAL_URL = crawler.MAL_URL
 
 def fill_database(start_page, num_pages):
 	anime_links = []
 
-	#Paginas a serem analisadas
+	# Paginas a serem analisadas
 	paginas = [x*50 for x in range(start_page, start_page + num_pages)]
 
 	for i in paginas:
@@ -35,18 +35,29 @@ def fill_database(start_page, num_pages):
 		# lista global de animes
 		anime_links.extend([x.get("href")[len(MAL_URL):] for x in links])
 
-	overwrite_cache = True # Ignora um possível cache hit e força a atualização da cache.
-	stop_on_request_error = True # Interrompe a execução da "thread" caso dê algum erro no request da página.
+	overwrite_cache = True #Ignora um possível cache hit e força a atualização da cache.
+	stop_on_error = True #Interrompe a execução da "thread" caso dê algum erro.
 	
-	#Debug
+	# Debug
 	k = 1
 	pid = os.getpid()
 	for link in anime_links:
-		if num_pages == 1:
-			print "#%d | Pagina %d: %d/50 # %s" % (pid, start_page + int((k-1) / 50), k % 50, link)
-			k += 1
-		if crawler.Anime.from_url(link, True) == None and stop_on_request_error == True:
-			exit(1)
+		current_page = start_page + int((k - 1) / 50)
+		link_index = k % 50
+		info = "Page %d: %d/50 # %s" % (current_page, link_index, link)
+		print "#%d | %s" % (pid, info)
+		k += 1
+		
+		if crawler.Anime.from_url(link, True) == None:
+			print "\033[91m#%d | Error on %s\033[0m" % (pid, info)
+			log_dir = "log"
+			if not(os.path.exists(log_dir)):
+				os.makedirs(log_dir)
+			with open("%s/p_%04d.txt" % (log_dir, current_page), "a") as f:
+				f.write(info + "\n")
+			
+			if stop_on_error == True:
+				exit(1)
 
 if __name__ == "__main__":
 	pagina_inicial = int(sys.argv[1])
