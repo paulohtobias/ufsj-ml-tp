@@ -17,6 +17,7 @@ def fill_database(start_page, num_pages):
 
 	for i in paginas:
 		print "Pagina " + str(i / 50) + ": " + str(i)
+
 		# Capturando a pagina do MyAnimeList
 		url = MAL_URL + "/topanime.php?limit=" + str(i)
 		try:
@@ -27,6 +28,8 @@ def fill_database(start_page, num_pages):
 			print "Erro ao realizar request na pagina " + str(i / 50) 
 			continue
 		
+		# Limpando o log
+		os.system("rm -f log/p_%04d.txt" % (i / 50))
 
 		# Capturando todos os links com o link dos animes
 		links = soup.find_all("a", {"class":"hoverinfo_trigger fl-l ml12 mr8"})
