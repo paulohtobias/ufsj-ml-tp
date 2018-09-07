@@ -48,7 +48,7 @@ class Anime:
 				pagina = urllib2.urlopen((MAL_URL + url).encode("UTF-8")).read()
 				soup = BeautifulSoup(pagina, "html5lib")
 			except:
-				print "Erro ao realizar request na pagina " + str(i) 
+				print "Erro ao realizar request na pagina"
 				return None
 
 			def get_year():
