@@ -12,6 +12,7 @@ paginas_faltando = sorted(map(lambda n: int(filter(str.isdigit, n)), os.listdir(
 
 if len(paginas_faltando) > 0:
 	paginas = paginas_faltando
+	intervalo = 1
 
 print pagina_inicio, pagina_fim, intervalo
 
