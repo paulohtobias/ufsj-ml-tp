@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import crawler
 import urllib2
@@ -23,7 +24,7 @@ def fill_database(start_page, num_pages):
 			pagina = response.read()
 			soup = bs(pagina, "html5lib")
 		except:
-			print "Erro ao realizar request na pagina "+ str(i) 
+			print "Erro ao realizar request na pagina " + str(i) 
 			continue
 		
 
@@ -34,8 +35,18 @@ def fill_database(start_page, num_pages):
 		# lista global de animes
 		anime_links.extend([x.get("href")[len(MAL_URL):] for x in links])
 
+	overwrite_cache = True # Ignora um possível cache hit e força a atualização da cache.
+	stop_on_request_error = True # Interrompe a execução da "thread" caso dê algum erro no request da página.
+	
+	#Debug
+	k = 1
+	pid = os.getpid()
 	for link in anime_links:
-		crawler.Anime.from_url(link)
+		if num_pages == 1:
+			print "#%d | Pagina %d: %d/50 # %s" % (pid, start_page + int((k-1) / 50), k % 50, link)
+			k += 1
+		if crawler.Anime.from_url(link, True) == None and stop_on_request_error == True:
+			exit(1)
 
 if __name__ == "__main__":
 	pagina_inicial = int(sys.argv[1])

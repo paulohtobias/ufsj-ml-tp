@@ -28,30 +28,49 @@ class Avaliacao:
 
 class Anime:
 	@staticmethod
-	def from_url(url):
+	def from_url(url, ingnore_cache = False):
 		anime = Anime()
 
 		anime.url = url
-
-		response = urllib2.urlopen((MAL_URL + url).encode("UTF-8"))
-		soup = BeautifulSoup(response.read(), "html5lib")
-
-		def get_year():
-			s = Anime.get_info(soup, "Aired", False)
-			print s
-			i = s.find(",") + 2
-			return int(s[i : i + 4])
-
-		anime.title = soup.find(itemprop = "name").string
-		anime.type = Anime.get_info(soup, "Type", False)
-		anime.episodes = Anime.get_info(soup, "Episodes", False)
-		anime.year = get_year()
-		anime.rating = Anime.get_info(soup, "Rating", False).split(" - ")[0]
 		anime.id = int(url.split("/")[2])
 
-		anime.update_from_url()
+		#Verificar se o anime já está salvo na cache
+		try:
+			if ingnore_cache:
+				raise Exception() #Pra cair no bloco ecxept
+			with open(anime.get_nome_arq(), "r") as arquivo:
+				#todo: isso é muito roubo e não sei se vai dar certo assim. Precisa testar mais.
+				#Em último caso tem que setar cada atributo separadamente.
+				anime.__dict__ = json.loads(arquivo.read())
+				return anime
+		except:
+			try:
+				pagina = urllib2.urlopen((MAL_URL + url).encode("UTF-8")).read()
+				soup = BeautifulSoup(pagina, "html5lib")
+			except:
+				print "Erro ao realizar request na pagina " + str(i) 
+				return None
 
-		return anime
+			def get_year():
+				s = Anime.get_info(soup, "Aired", False)
+				if s == "Not available":
+					return None
+				i = s.find(",") + 2
+				return int(s[i : i + 4])
+
+			anime.title = soup.find(itemprop = "name").string
+
+			anime.type = Anime.get_info(soup, "Type", False)
+			anime.episodes = Anime.get_info(soup, "Episodes", False)
+			anime.year = get_year()
+			try:
+				anime.rating = Anime.get_info(soup, "Rating", False).split(" - ")[0]
+			except:
+				anime.rating = None
+
+			anime.update_from_url(soup, ingnore_cache)
+
+			return anime
 
 	@staticmethod
 	def from_user_entry(user_entry):
@@ -74,19 +93,21 @@ class Anime:
 			
 		return anime
 
-	def update_from_url(self):
+	def update_from_url(self, soup = None, ingnore_cache = False):
 		#Verificar se o anime já está salvo na cache
 		try:
-			with open(ANIMES_PATH + str(self.id) + ".json", "r") as arquivo:
+			if ingnore_cache:
+				raise Exception() #Pra cair no bloco ecxept
+			with open(self.get_nome_arq()) as arquivo:
 				#todo: isso é muito roubo e não sei se vai dar certo assim. Precisa testar mais.
 				#Em último caso tem que setar cada atributo separadamente.
 				self.__dict__ = json.loads(arquivo.read())
 				return
 		except:
 			url = MAL_URL + self.url
-			response = urllib2.urlopen(url.encode("UTF-8"))
-			pagina = response.read()
-			soup = BeautifulSoup(pagina, "html5lib")
+			if soup == None:
+				pagina = urllib2.urlopen(url.encode("UTF-8")).read()
+				soup = BeautifulSoup(pagina, "html5lib")
 
 			#Super atoi
 			def satoi(string):
@@ -103,7 +124,10 @@ class Anime:
 			self.duration = satoi(Anime.get_info(soup, "Duration", False))
 
 			#Statistics
-			self.public_score = float(soup.find(itemprop = "ratingValue").string)
+			try:
+				self.public_score = float(Anime.get_info(soup, "Score", False))
+			except:
+				self.public_score = None
 			self.rank = satoi(Anime.get_info(soup, "Ranked", False))
 			self.popularity = satoi(Anime.get_info(soup, "Popularity", False))
 
@@ -116,7 +140,6 @@ class Anime:
 			os.makedirs(ANIMES_PATH)
 		with open(self.get_nome_arq(), "w") as arq:
 			arq.write(file_json)
-			print "%7d: %s" % (self.id, self.title.encode("utf-8"))
 
 	def get_nome_arq(self):
 		return ANIMES_PATH + str(self.id) + ".json"
@@ -126,13 +149,29 @@ class Anime:
 		tag = soup.find(string = atributo + ":").parent
 
 		#Funções úteis
-		strip = lambda t: t.string.strip(" ,\n")
+		def strip(t):
+			try:
+				return t.string.strip(" ,\n")
+			except:
+				return ""
 		filtro = lambda s: len(s) > 0 and s not in ["None found", "add some"]
 
 		if is_list:
-			return filter(filtro, map(strip, list(tag.next_siblings)))
+			info_list = filter(filtro, map(strip, list(tag.next_siblings)))
+			if len(info_list) > 0:
+				return info_list
+			else:
+				return None
 		else:
-			return strip(tag.next_sibling)
+			info = tag.next_sibling
+			while not filtro(strip(info)):
+				info = info.next_sibling
+			
+			sinfo = strip(info)
+			if sinfo == "Unknown":
+				return None
+			else:
+				return strip(info)
 
 """
 atributos iniciais

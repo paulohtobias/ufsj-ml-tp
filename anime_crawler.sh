@@ -1,9 +1,11 @@
 #!/bin/bash
 
-TETO=1 #Total de páginas
-PAGINA=0
+PAGINA=$1
+TETO=$2 #Total de páginas
+STOP_ON_ERROR="True"
 while [  $PAGINA -lt $TETO ];
 do
-	python find_database.py $PAGINA 1 &
+	echo $PAGINA
+	python find_database.py $PAGINA 1 $STOP_ON_ERROR &
 	PAGINA=$((PAGINA+1))
 done
