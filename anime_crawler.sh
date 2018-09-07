@@ -9,3 +9,4 @@ do
 	python find_database.py $PAGINA 1 $STOP_ON_ERROR &
 	PAGINA=$((PAGINA+1))
 done
+wait

@@ -13,10 +13,10 @@ def fill_database(start_page, num_pages):
 	anime_links = []
 
 	# Paginas a serem analisadas
-	paginas = [x*50 for x in range(start_page, start_page + num_pages)]
+	paginas = [x * 50 for x in range(start_page, start_page + num_pages)]
 
 	for i in paginas:
-		print "Pagina "+str(i)+" "+str(i/50)
+		print "Pagina " + str(i / 50) + ": " + str(i)
 		# Capturando a pagina do MyAnimeList
 		url = MAL_URL + "/topanime.php?limit=" + str(i)
 		try:
@@ -24,7 +24,7 @@ def fill_database(start_page, num_pages):
 			pagina = response.read()
 			soup = bs(pagina, "html5lib")
 		except:
-			print "Erro ao realizar request na pagina " + str(i) 
+			print "Erro ao realizar request na pagina " + str(i / 50) 
 			continue
 		
 
@@ -35,8 +35,8 @@ def fill_database(start_page, num_pages):
 		# lista global de animes
 		anime_links.extend([x.get("href")[len(MAL_URL):] for x in links])
 
-	overwrite_cache = True #Ignora um possível cache hit e força a atualização da cache.
-	stop_on_error = True #Interrompe a execução da "thread" caso dê algum erro.
+	overwrite_cache = False #Ignora um possível cache hit e força a atualização da cache.
+	stop_on_error = False #Interrompe a execução da "thread" caso dê algum erro.
 	
 	# Debug
 	k = 1
@@ -48,13 +48,13 @@ def fill_database(start_page, num_pages):
 		print "#%d | %s" % (pid, info)
 		k += 1
 		
-		if crawler.Anime.from_url(link, True) == None:
+		if crawler.Anime.from_url(link, overwrite_cache) == None:
 			print "\033[91m#%d | Error on %s\033[0m" % (pid, info)
 			log_dir = "log"
 			if not(os.path.exists(log_dir)):
 				os.makedirs(log_dir)
 			with open("%s/p_%04d.txt" % (log_dir, current_page), "a") as f:
-				f.write(info + "\n")
+				f.write(info.encode('utf8') + "\n")
 			
 			if stop_on_error == True:
 				exit(1)
