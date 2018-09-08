@@ -8,23 +8,30 @@ import os
 
 MAL_URL = "https://myanimelist.net"
 ANIMES_PATH = "data/animes/"
-usuario = "Zarem101"
-USER_PATH = "data/users/" + usuario + "/"
 
 class Avaliacao:
-	def __init__(self, user_entry, id_anime):
+	def __init__(self, usuario, user_entry):
+		self.user_name = usuario
 		self.num_watched_episodes = user_entry["num_watched_episodes"]
-		self.user_score = user_entry["score"] #LEMBRETE: score == 0 significa que ainda não foi avaliado.
+		user_score = user_entry["score"]
+		if user_score > 0:
+			self.user_score = user_score
+		else:
+			self.user_score = None
 		self.status = user_entry["status"]
-		
-		self.criar_nova_avaliacao(id_anime)
-	
+
+		self.criar_nova_avaliacao(user_entry["anime_id"])
+
 	def criar_nova_avaliacao(self, id_anime):
 		file_json = json.dumps(self.__dict__, indent = 4)
-		if not(os.path.exists(USER_PATH)):
-			os.makedirs(USER_PATH)
-		with open(USER_PATH + str(id_anime) + ".json", "w") as arq:
+		user_path = self.get_path()
+		if not(os.path.exists(user_path)):
+			os.makedirs(user_path)
+		with open(user_path + "/" + str(id_anime) + ".json", "w") as arq:
 			arq.write(file_json)
+
+	def get_path(self):
+		return "data/users/" + self.user_name
 
 class Anime:
 	@staticmethod
@@ -73,24 +80,16 @@ class Anime:
 			return anime
 
 	@staticmethod
-	def from_user_entry(user_entry):
-		anime = Anime()
+	def from_user_entry(user_name, user_entry):
+		anime = Anime.from_url(user_entry["anime_url"])
 
-		anime.title = user_entry["anime_title"]
-		anime.url = user_entry["anime_url"] #Pode ser usado como "hash" na cache
-		anime.type = user_entry["anime_media_type_string"]
-		anime.episodes = user_entry["anime_num_episodes"]
-		anime.year = datetime.datetime.strptime(user_entry["anime_start_date_string"][-2:], "%y").year
-		anime.rating = user_entry["anime_mpaa_rating_string"]
-		anime.id = user_entry["anime_id"]
-		try:
-			#Criar nova avaliação do usuario para o anime
-			Avaliacao(user_entry, anime.id)
-		
-			anime.update_from_url()
-		except:
-			return None
-			
+		if anime != None:
+			try:
+				#Criar nova avaliação do usuario para o anime
+				Avaliacao(user_name, user_entry)
+			except:
+				return None
+
 		return anime
 
 	def update_from_url(self, soup = None, ingnore_cache = False):
@@ -216,6 +215,4 @@ def get_lista(usuario, status = Status.todos):
 	pagina = response.read()
 
 	soup = BeautifulSoup(pagina, 'lxml')
-	return map(lambda ue: Anime.from_user_entry(ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
-
-#u = get_lista(usuario)
+	return map(lambda ue: Anime.from_user_entry(usuario, ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
