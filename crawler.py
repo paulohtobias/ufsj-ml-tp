@@ -75,39 +75,6 @@ class Anime:
 			except:
 				anime.rating = None
 
-			anime.update_from_url(soup, ingnore_cache)
-
-			return anime
-
-	@staticmethod
-	def from_user_entry(user_name, user_entry):
-		anime = Anime.from_url(user_entry["anime_url"])
-
-		if anime != None:
-			try:
-				#Criar nova avaliação do usuario para o anime
-				Avaliacao(user_name, user_entry)
-			except:
-				return None
-
-		return anime
-
-	def update_from_url(self, soup = None, ingnore_cache = False):
-		#Verificar se o anime já está salvo na cache
-		try:
-			if ingnore_cache:
-				raise Exception() #Pra cair no bloco ecxept
-			with open(self.get_nome_arq()) as arquivo:
-				#todo: isso é muito roubo e não sei se vai dar certo assim. Precisa testar mais.
-				#Em último caso tem que setar cada atributo separadamente.
-				self.__dict__ = json.loads(arquivo.read())
-				return
-		except:
-			url = MAL_URL + self.url
-			if soup == None:
-				pagina = urllib2.urlopen(url.encode("UTF-8")).read()
-				soup = BeautifulSoup(pagina, "html5lib")
-
 			#Super atoi
 			def satoi(string):
 				try:
@@ -132,6 +99,21 @@ class Anime:
 
 			#Criar novo anime na cache
 			self.criar_novo_anime()
+
+			return anime
+
+	@staticmethod
+	def from_user_entry(user_name, user_entry):
+		anime = Anime.from_url(user_entry["anime_url"])
+
+		if anime != None:
+			try:
+				#Criar nova avaliação do usuario para o anime
+				Avaliacao(user_name, user_entry)
+			except:
+				return None
+
+		return anime
 		
 	def criar_novo_anime(self):
 		file_json = json.dumps(self.__dict__, indent = 4)
@@ -216,3 +198,5 @@ def get_lista(usuario, status = Status.todos):
 
 	soup = BeautifulSoup(pagina, 'lxml')
 	return map(lambda ue: Anime.from_user_entry(usuario, ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
+
+get_lista("jusaragu")
