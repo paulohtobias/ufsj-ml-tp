@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import urllib2
+from selenium import webdriver
 from bs4 import BeautifulSoup
 import json
 import datetime
 import os
+import re
 
 MAL_URL = "https://myanimelist.net"
 ANIMES_PATH = "data/animes/"
@@ -83,22 +85,22 @@ class Anime:
 					return None
 
 			#Information
-			self.licensors = Anime.get_info(soup, "Licensors", True)
-			self.studios = Anime.get_info(soup, "Studios", True)
-			self.source = Anime.get_info(soup, "Source", False)
-			self.genres = Anime.get_info(soup, "Genres", True)
-			self.duration = satoi(Anime.get_info(soup, "Duration", False))
+			anime.licensors = Anime.get_info(soup, "Licensors", True)
+			anime.studios = Anime.get_info(soup, "Studios", True)
+			anime.source = Anime.get_info(soup, "Source", False)
+			anime.genres = Anime.get_info(soup, "Genres", True)
+			anime.duration = satoi(Anime.get_info(soup, "Duration", False))
 
 			#Statistics
 			try:
-				self.public_score = float(Anime.get_info(soup, "Score", False))
+				anime.public_score = float(Anime.get_info(soup, "Score", False))
 			except:
-				self.public_score = None
-			self.rank = satoi(Anime.get_info(soup, "Ranked", False))
-			self.popularity = satoi(Anime.get_info(soup, "Popularity", False))
+				anime.public_score = None
+			anime.rank = satoi(Anime.get_info(soup, "Ranked", False))
+			anime.popularity = satoi(Anime.get_info(soup, "Popularity", False))
 
 			#Criar novo anime na cache
-			self.criar_novo_anime()
+			anime.criar_novo_anime()
 
 			return anime
 
@@ -189,14 +191,76 @@ class Status:
 	plan = "6" #Não sei nem se faz sentido esse.
 	todos = "7"
 
-def get_lista(usuario, status = Status.todos):
-	#todo: deixar retornar mais de um status por vez?
-	url = MAL_URL + "/animelist/" + usuario + "?status=" + status
+def get_lista(usuario, status = Status.todos, browser = None):
+	if os.path.exists("data/users/" + usuario):
+		pass#return []
 
-	response = urllib2.urlopen(url)
+	url = MAL_URL + "/animelist/" + usuario + "?status=" + status
+	print url
+
+	try:
+		response = urllib2.urlopen(url)
+	except:
+		return None
+	
 	pagina = response.read()
 
-	soup = BeautifulSoup(pagina, 'lxml')
-	return map(lambda ue: Anime.from_user_entry(usuario, ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
+	soup = BeautifulSoup(pagina, 'html5lib')
+	#print list(soup.find_all(href = re.compile(r"/anime/\d+/.+")))
+	try:
+		lista = map(lambda ue: Anime.from_user_entry(usuario, ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
+	except:
+		statuses = [status]
+		if status == Status.todos:
+			statuses = [Status.watching, Status.completed, Status.hold, Status.dropped, Status.plan]
+		
+		geckodriver = "./geckodriver"
 
-get_lista("jusaragu")
+		bq = False
+		if browser == None:
+			options = webdriver.FirefoxOptions()
+			options.add_argument("-headless")
+
+			browser = webdriver.Firefox(executable_path=geckodriver, firefox_options=options)
+			bq = True
+
+		lista = []
+
+		for status in statuses:
+			url = MAL_URL + "/animelist/" + usuario + "?status=" + status
+			
+			browser.get(url)
+
+			pagina = browser.page_source
+
+			soup = BeautifulSoup(pagina, "html5lib")
+
+			tags = list(soup.find_all(class_="animetitle"))
+
+			#Para cada anime
+			for tag in tags:
+				ts = list(tag.parent.next_siblings)
+				user_entry = {}
+				user_entry["anime_url"] = tag.get("href")
+				user_entry["anime_id"] = user_entry["anime_url"].split("/")[2]
+				user_entry["status"] = status
+				
+				try:
+					user_entry["score"] = int(ts[1].string.strip())
+				except:
+					user_entry["score"] = 0
+
+				try:
+					user_entry["num_watched_episodes"] = int(ts[5].string.strip())
+				except:
+					try:
+						user_entry["num_watched_episodes"] = int(ts[5].span.string.strip())
+					except:
+						user_entry["num_watched_episodes"] = 0
+
+				lista.append(Anime.from_user_entry(usuario, user_entry))
+
+		if bq:
+			browser.quit()
+
+	return lista
