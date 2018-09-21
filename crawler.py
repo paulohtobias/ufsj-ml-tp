@@ -193,7 +193,7 @@ class Status:
 
 def get_lista(usuario, status = Status.todos, browser = None):
 	if os.path.exists("data/users/" + usuario):
-		pass#return []
+		return []
 
 	url = MAL_URL + "/animelist/" + usuario + "?status=" + status
 	print url
@@ -264,3 +264,10 @@ def get_lista(usuario, status = Status.todos, browser = None):
 			browser.quit()
 
 	return lista
+    
+if __name__ == "__main__":
+        arq = open("users.txt","r")
+        lista = arq.readlines()
+        for user in lista:
+                get_lista(user)
+        arq.close()
