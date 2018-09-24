@@ -196,7 +196,6 @@ def get_lista(usuario, status = Status.todos, browser = None):
 		return []
 
 	url = MAL_URL + "/animelist/" + usuario + "?status=" + status
-	print url
 
 	try:
 		response = urllib2.urlopen(url)
@@ -263,11 +262,12 @@ def get_lista(usuario, status = Status.todos, browser = None):
 		if bq:
 			browser.quit()
 
+	print url
 	return lista
     
 if __name__ == "__main__":
         arq = open("users.txt","r")
-        lista = arq.readlines()
+        lista = map(lambda s: s.strip(), set(arq.readlines()))
         for user in lista:
                 get_lista(user)
         arq.close()
