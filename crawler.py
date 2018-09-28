@@ -105,17 +105,24 @@ class Anime:
 			return anime
 
 	@staticmethod
-	def from_user_entry(user_name, user_entry):
+	def from_user_entry(username, user_entry):
 		anime = Anime.from_url(user_entry["anime_url"])
 
 		if anime != None:
 			try:
 				#Criar nova avaliação do usuario para o anime
-				Avaliacao(user_name, user_entry)
+				Avaliacao(username, user_entry)
 			except:
 				return None
 
 		return anime
+	
+	@staticmethod
+	def from_file(username, filename):
+		with open(ANIMES_PATH + filename) as f:
+			url = json.loads(f.read())["url"]
+
+			return Anime.from_url(url)
 		
 	def criar_novo_anime(self):
 		file_json = json.dumps(self.__dict__, indent = 4)
@@ -191,9 +198,16 @@ class Status:
 	plan = "6" #Não sei nem se faz sentido esse.
 	todos = "7"
 
-def get_lista(usuario, status = Status.todos, browser = None):
-	if os.path.exists("data/users/" + usuario):
-		return []
+def get_lista(usuario, status = Status.todos, browser = None, force_update = False):
+	if os.path.exists("data/users/" + usuario) and force_update == False:
+		lista = []
+
+		for (dirpath, dirnames, filenames) in os.walk("data/users/" + usuario):
+			for filename in filenames:
+				lista.append(Anime.from_file(usuario, filename))
+			break
+
+		return lista
 
 	url = MAL_URL + "/animelist/" + usuario + "?status=" + status
 
@@ -201,18 +215,17 @@ def get_lista(usuario, status = Status.todos, browser = None):
 		response = urllib2.urlopen(url)
 	except:
 		return None
-	
+
 	pagina = response.read()
 
 	soup = BeautifulSoup(pagina, 'html5lib')
-	#print list(soup.find_all(href = re.compile(r"/anime/\d+/.+")))
 	try:
 		lista = map(lambda ue: Anime.from_user_entry(usuario, ue), json.loads(soup.find(class_ = "list-table")["data-items"]))
 	except:
 		statuses = [status]
 		if status == Status.todos:
 			statuses = [Status.watching, Status.completed, Status.hold, Status.dropped, Status.plan]
-		
+
 		geckodriver = "./geckodriver"
 
 		bq = False
@@ -227,7 +240,7 @@ def get_lista(usuario, status = Status.todos, browser = None):
 
 		for status in statuses:
 			url = MAL_URL + "/animelist/" + usuario + "?status=" + status
-			
+
 			browser.get(url)
 
 			pagina = browser.page_source
@@ -243,7 +256,7 @@ def get_lista(usuario, status = Status.todos, browser = None):
 				user_entry["anime_url"] = tag.get("href")
 				user_entry["anime_id"] = user_entry["anime_url"].split("/")[2]
 				user_entry["status"] = status
-				
+
 				try:
 					user_entry["score"] = int(ts[1].string.strip())
 				except:
@@ -264,7 +277,7 @@ def get_lista(usuario, status = Status.todos, browser = None):
 
 	print url
 	return lista
-    
+
 if __name__ == "__main__":
         arq = open("users.txt","r")
         lista = map(lambda s: s.strip(), set(arq.readlines()))

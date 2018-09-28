@@ -62,3 +62,7 @@ target/
 data/
 log/
 geckodriver*
+
+\.ipynb_checkpoints/
+
+*.ipynb
