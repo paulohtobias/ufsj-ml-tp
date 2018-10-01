@@ -2,4 +2,19 @@
 	background-image: url(../img/green-geometric.jpg);
 	background-size: 20%;
 	background-repeat: repeat;
+	background-attachment: fixed;
+}
+
+.f-lg{
+	font-size: 2em !important;
+}
+
+.f-md{
+	font-size: 1em !important;
+}
+.f-sm{
+	font-size: 0.5em !important;
+}
+.f-xs{
+	font-size: 0.25em !important;
 }
