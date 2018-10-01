@@ -60,6 +60,13 @@ class Anime:
 				print "Erro ao realizar request na pagina"
 				return None
 
+			#Super atoi
+			def satoi(string):
+				try:
+					return int(filter(unicode.isdigit, string))
+				except:
+					return None
+
 			def get_year():
 				s = Anime.get_info(soup, "Aired", False)
 				if s == "Not available":
@@ -68,21 +75,13 @@ class Anime:
 				return int(s[i : i + 4])
 
 			anime.title = soup.find(itemprop = "name").string
-
 			anime.type = Anime.get_info(soup, "Type", False)
-			anime.episodes = Anime.get_info(soup, "Episodes", False)
+			anime.episodes = satoi(Anime.get_info(soup, "Episodes", False))
 			anime.year = get_year()
 			try:
 				anime.rating = Anime.get_info(soup, "Rating", False).split(" - ")[0]
 			except:
 				anime.rating = None
-
-			#Super atoi
-			def satoi(string):
-				try:
-					return int(filter(unicode.isdigit, string))
-				except:
-					return None
 
 			#Information
 			anime.licensors = Anime.get_info(soup, "Licensors", True)
