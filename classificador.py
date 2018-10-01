@@ -24,8 +24,10 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 	generos = []
 	estudios = []
 	for anime in lista_animes:
-		generos.extend(anime.genres)
-		estudios.extend(anime.studios)
+		if anime.genres != None:
+			generos.extend(anime.genres)
+		if anime.studios != None:
+			estudios.extend(anime.studios)
 
 	generos = list(set(generos))
 	estudios = list(set(estudios))
@@ -49,10 +51,6 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 			dado_filtrado = {}
 			
 			for atributo in atributos_anime:
-				valor = dado[atributo]
-				if atributo == "episodes":
-					valor = int(dado[atributo])
-
 				if atributo == "genres":
 					for genero in generos:
 						if genero in dado["genres"]:
@@ -70,19 +68,20 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 					continue
 
 				if agrupar_episodios and "episodes" in atributo:
-					epis = int(dado[atributo])
-					if epis <= 6:
-						valor = 1
-					elif epis <= 14:
-						valor = 2
-					elif epis <= 26:
-						valor = 3
-					elif epis <= 70:
-						valor = 4
-					else:
-						valor = 5
-
-				dado_filtrado[atributo] = valor
+					try:
+						epis = int(dado[atributo])
+						if epis <= 6:
+							dado_filtrado[atributo] = 1
+						elif epis <= 14:
+							dado_filtrado[atributo] = 2
+						elif epis <= 26:
+							dado_filtrado[atributo] = 3
+						elif epis <= 70:
+							dado_filtrado[atributo] = 4
+						else:
+							dado_filtrado[atributo] = 5
+					except:
+						dado_filtrado[atributo] = dado[atributo]
 
 			for atributo in atributos_avaliacao:
 				dado_filtrado[atributo] = dado[atributo]
@@ -92,7 +91,7 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 	return dados
 
 
-lista_final = filtro("Master_Exploder", lambda d: d["status"] == 2, force_update=True)
+lista_final = filtro("jusaragu", lambda d: d["status"] == 2, force_update=True)
 
 df = pd.read_json(json.dumps(lista_final))
 
