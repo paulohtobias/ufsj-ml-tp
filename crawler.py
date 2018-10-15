@@ -20,7 +20,7 @@ class Avaliacao:
 			self.user_score = user_score
 		else:
 			self.user_score = None
-		self.status = user_entry["status"]
+		self.status = int(user_entry["status"])
 
 		self.criar_nova_avaliacao(user_entry["anime_id"])
 

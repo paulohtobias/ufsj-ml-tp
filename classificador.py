@@ -91,18 +91,23 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 	return dados
 
 
-lista_final = filtro("jusaragu", lambda d: d["status"] == 2, force_update=True)
+# params: "jusaragu", lambda d: d["status"] == 2, force_update=True
 
-df = pd.read_json(json.dumps(lista_final))
+def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, agrupar_episodios = False, force_update = False):
+	lista_final = filtro("jusaragu", lambda d: d["status"] == 2, force_update=True)
 
-y_train = df['user_score']
-x_train = df.drop('user_score', axis = 1)
+	df = pd.read_json(json.dumps(lista_final))
 
-from sklearn import preprocessing
-le = preprocessing.LabelEncoder()
-for attr in x_train.columns:
-    if x_train[attr].dtype == object:
-        x_train[attr] = le.fit_transform(x_train[attr])
+	target = df['user_score']
+	data = df.drop('user_score', axis = 1)
+
+	from sklearn import preprocessing
+	le = preprocessing.LabelEncoder()
+	for attr in data.columns:
+		if data[attr].dtype == object:
+			data[attr] = le.fit_transform(data[attr])
+	
+	return data, target
 
 from sklearn import tree
 clf = tree.DecisionTreeClassifier()
