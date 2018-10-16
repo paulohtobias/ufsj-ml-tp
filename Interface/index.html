@@ -83,14 +83,36 @@
 				<!-- Informações de Resposta -->
 				<div class="row mb-3">
 					<!-- Informações do anime -->
-					<div class="col-12">
-						<p>Coisas do anime</p>
+					<div class="col-12 col-md-9">
+						<img id="AnimeImage" src="" class="img-thumbnail float-left mr-3">
+						<p>
+							<h2>
+								<span id="Titulo"></span>
+								<small> #<span id="Rank"></span></small>
+							</h2>
+						</p>
+						<p>
+							<strong>Sinopse: </strong>
+							<span id="Sinopse"></span>
+						</p>
+						<p>
+							<strong>Gêneros: </strong>
+							<span id="Generos"></span>
+						</p>
+						<p>
+							<strong>Score Global: </strong>
+							<span id="Score" class="text-info"></span>/ 5.00
+						</p>
 					</div>
 
 					<!-- Avaliação Realizada -->
-					<div class="col-12 text-center">
-						<span id="caption-estimativa"></span>
-						<input id="estimativa" type="text" class="rating-loading">
+					<div class="col-12 col-md-3 text-center">
+						<div class="d-flex flex-row align-items-center justify-content-center h-100">
+							<div class="p-5">
+								<span id="caption-estimativa"></span>
+								<input id="estimativa" type="text" class="rating-loading">
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -102,6 +124,13 @@
 <script>
 	/* As variaveis valor_estimativa, starCap e starCapClass 
 	 * estão no arquivo ./js/index.js */
+	$("#AnimeImage").attr("src", AnimeImage);
+	$('#Titulo').text(Titulo);
+	$('#Rank').text(Rank);
+	$('#Sinopse').text(Sinopse);
+	$('#Generos').text(Generos);
+	$('#Score').text(Score);
+
 	$("#estimativa").attr("value",valor_estimativa);
 	$("#estimativa").rating({
 		disabled: true,

@@ -1,6 +1,15 @@
-var valor_estimativa = 0.5;
+/* Informações do anime */
+var AnimeImage = "https://myanimelist.cdn-dena.com/images/anime/1173/92110.jpg";
+var Titulo = "Shingeki no Kyojin";
+var Rank = 57;
+var Sinopse = "Lorem ipsum dolor sit amet consectetur adipisicing elit. At modi molestias iure temporibus omnis pariatur quasi amet nobis sunt dolores. Aspernatur quis totam exercitationem iusto voluptate repellat quidem autem pariatur.";
+var Generos = "Action, Military, Mystery, Super Power, Drama, Fantasy, Shounen";
+var Score = 4.24;
 
-var starCap = {
+/* Estimativa gerada pelo classificador */
+var valor_estimativa = 3.5;
+
+let starCap = {
 	0.0: "No Score", 
 	0.5: "Appalling", 
 	1.0: "Horrible", 
@@ -14,7 +23,7 @@ var starCap = {
 	5.0: "Masterpiece"
 };
 
-var starCapClass = {
+let starCapClass = {
 	0.5: 'badge badge-danger bg-danger f-md',
 	1.0: 'badge badge-danger bg-danger f-md',
 	1.5: 'badge badge-warning bg-warning f-md',
