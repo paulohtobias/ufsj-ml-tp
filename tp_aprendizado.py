@@ -72,7 +72,7 @@ super_generos = {
 	"Yuri": "Adult"
 }
 
-def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao):
+def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = None):
 	dado = {}
 	dado_filtrado = {}
 
@@ -80,62 +80,79 @@ def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atribu
 	for atributo in atributos_anime_todos:
 		dado[atributo] = anime.__dict__[atributo]
 
+	if "user_score" not in atributos_avaliacao:
+		atributos_avaliacao.append("user_score")
 	# Pegando os dados da avaliação
-	with open("data/users/" + usuario + "/" + str(anime.id) + ".json") as f:
-		avaliacao = json.loads(f.read())
+	try:
+		with open("data/users/" + usuario + "/" + str(anime.id) + ".json") as f:
+			avaliacao = json.loads(f.read())
+	except:
+		avaliacao = {
+			"user_name": usuario,
+			"num_watched_episodes": 0,
+			"user_score": None,
+			"status": int(crawler.Status.plan)
+		}
 
-		for atributo in atributos_avaliacao_todos:
-			dado[atributo] = avaliacao[atributo]
+	for atributo in atributos_avaliacao_todos:
+		dado[atributo] = avaliacao[atributo]
 	
-	for atributo in atributos_anime:
-		if atributo == "genres":
-			for genero in generos:
-				genero_bool = "Genre:" + super_generos[genero]
-				if dado["genres"] != None and genero in dado["genres"]:
-					dado_filtrado[genero_bool] = 1
-				elif dado_filtrado.has_key(genero_bool) == False:
-					dado_filtrado[genero_bool] = -1
-			continue
-
-		if atributo == "studios":
-			for estudio in estudios:
-				if dado["studios"] != None and estudio in dado["studios"]:
-					dado_filtrado["Studio:" + estudio] = 1
-				else:
-					dado_filtrado["Studio:" + estudio] = -1
-			continue
-
-		if "episodes" in atributo:
-			try:
-				epis = int(dado[atributo])
-				if epis <= 6:
-					dado_filtrado[atributo] = 1
-				elif epis <= 14:
-					dado_filtrado[atributo] = 2
-				elif epis <= 26:
-					dado_filtrado[atributo] = 3
-				elif epis <= 70:
-					dado_filtrado[atributo] = 4
-				else:
-					dado_filtrado[atributo] = 5
+	if f_selecao == None or f_selecao(dado) == True:
+		for atributo in atributos_anime:
+			if atributo == "genres":
+				for genero in generos:
+					genero_bool = "Genre:" + super_generos[genero]
+					if dado["genres"] != None and genero in dado["genres"]:
+						dado_filtrado[genero_bool] = 1
+					elif dado_filtrado.has_key(genero_bool) == False:
+						dado_filtrado[genero_bool] = -1
 				continue
-			except:
+
+			if atributo == "studios":
+				for estudio in estudios:
+					if dado["studios"] != None and estudio in dado["studios"]:
+						dado_filtrado["Studio:" + estudio] = 1
+					else:
+						dado_filtrado["Studio:" + estudio] = -1
+				continue
+
+			if "episodes" in atributo:
+				try:
+					epis = int(dado[atributo])
+					if epis <= 6:
+						dado_filtrado[atributo] = 1
+					elif epis <= 14:
+						dado_filtrado[atributo] = 2
+					elif epis <= 26:
+						dado_filtrado[atributo] = 3
+					elif epis <= 70:
+						dado_filtrado[atributo] = 4
+					else:
+						dado_filtrado[atributo] = 5
+					continue
+				except:
+					dado_filtrado[atributo] = dado[atributo]
+					continue
+
+			if dado[atributo] == None:
+				dado_filtrado[atributo] = 0
+			else:
 				dado_filtrado[atributo] = dado[atributo]
-				continue
 
-		if dado[atributo] == None:
-			dado_filtrado[atributo] = 0
-		else:
-			dado_filtrado[atributo] = dado[atributo]
-
-	for atributo in atributos_avaliacao:
-		if dado[atributo] == None:
-			dado_filtrado[atributo] = 0
-		else:
-			dado_filtrado[atributo] = dado[atributo]
+		for atributo in atributos_avaliacao:
+			if dado[atributo] == None:
+				dado_filtrado[atributo] = 0
+			else:
+				dado_filtrado[atributo] = dado[atributo]
+		
+		return dado_filtrado
 	
-	dado_filtrado_json = "[" + json.dumps(dado_filtrado) + "]"
-	df = pd.read_json(dado_filtrado_json)
+	return None
+
+def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = None):
+	anime_dict = anime_to_dict(usuario, anime, atributos_anime, atributos_avaliacao, f_selecao)
+	anime_dict_json = "[" + json.dumps(anime_dict) + "]"
+	df = pd.read_json(anime_dict_json)
 	df = df.iloc[[0]]
 
 	data = df.drop('user_score', axis = 1)
@@ -148,9 +165,6 @@ def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atribu
 	return data
 
 def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, agrupar_episodios = False, force_update = False):
-	if "user_score" not in atributos_avaliacao:
-		atributos_avaliacao.append("user_score")
-
 	dados = []
 	lista_animes = crawler.get_lista(usuario)
     
@@ -170,71 +184,9 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 	estudios = list(set(estudios))
 
 	for anime in lista_animes:
-		dado = {}
-		dado_filtrado = {}
-
-		# Pegando os dados do anime
-		for atributo in atributos_anime_todos:
-			dado[atributo] = anime.__dict__[atributo]
-
-		# Pegando os dados da avaliação
-		with open("data/users/" + usuario + "/" + str(anime.id) + ".json") as f:
-			avaliacao = json.loads(f.read())
-
-			for atributo in atributos_avaliacao_todos:
-				dado[atributo] = avaliacao[atributo]
-
-		if f_selecao == None or f_selecao(dado):
-			dado_filtrado = {}
-
-			for atributo in atributos_anime:
-				if atributo == "genres":
-					for genero in generos:
-						genero_bool = "Genre:" + super_generos[genero]
-						if dado["genres"] != None and genero in dado["genres"]:
-							dado_filtrado[genero_bool] = 1
-						elif dado_filtrado.has_key(genero_bool) == False:
-							dado_filtrado[genero_bool] = -1
-					continue
-
-				if atributo == "studios":
-					for estudio in estudios:
-						if dado["studios"] != None and estudio in dado["studios"]:
-							dado_filtrado["Studio:" + estudio] = 1
-						else:
-							dado_filtrado["Studio:" + estudio] = -1
-					continue
-
-				if agrupar_episodios and "episodes" in atributo:
-					try:
-						epis = int(dado[atributo])
-						if epis <= 6:
-							dado_filtrado[atributo] = 1
-						elif epis <= 14:
-							dado_filtrado[atributo] = 2
-						elif epis <= 26:
-							dado_filtrado[atributo] = 3
-						elif epis <= 70:
-							dado_filtrado[atributo] = 4
-						else:
-							dado_filtrado[atributo] = 5
-						continue
-					except:
-						dado_filtrado[atributo] = dado[atributo]
-						continue
-
-				if dado[atributo] == None:
-					dado_filtrado[atributo] = 0
-				else:
-					dado_filtrado[atributo] = dado[atributo]
-
-			for atributo in atributos_avaliacao:
-				if dado[atributo] == None:
-					dado_filtrado[atributo] = 0
-				else:
-					dado_filtrado[atributo] = dado[atributo]
-
-			dados.append(dado_filtrado)
+		dado = anime_to_dict(usuario, anime, atributos_anime, atributos_avaliacao, f_selecao)
+		if dado != None:
+			dados.append(dado)
 
 	return dados
 
@@ -246,7 +198,6 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 	target = df['user_score']
 	data = df.drop('user_score', axis = 1)
 
-	from sklearn import preprocessing
 	le = preprocessing.LabelEncoder()
 	for attr in data.columns:
 		if data[attr].dtype == object:
@@ -256,47 +207,18 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 
 def teste():
 	usuario = "zarem101"
-	x, y = carregar_dataset(usuario, lambda d: (d["status"] == 2 or d["status"] == "2"), force_update=False)
+	x, y = carregar_dataset(usuario, lambda d: d["status"] == 2 or d["status"] == "2", force_update=False)
 	anime = crawler.Anime.from_file(usuario, "43.json")
 	anime_df = anime_to_df(usuario, anime)
 
 	x_df = x.iloc[[27]]
-	print x_df.columns
-	print anime_df.columns
-	#print x_df == anime_df
-
-
-if __name__ == "__main__":
-	teste()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	print x_df
+	print anime_df.values
 
 
 def bla():
-	x, y = carregar_dataset("Master_Exploder", lambda d: d["status"] == 2 or d["status"] == "2", force_update=False)
+	usuario = "jusaragu"
+	x, y = carregar_dataset(usuario, lambda d: d["status"] == 2 or d["status"] == "2", force_update=False)
 
 	cont = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -328,8 +250,12 @@ def bla():
 	# Apresentacao dos resultados
 	print 'Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), scores.std() * 2)
 
+	anime = crawler.Anime.from_file(usuario, "185.json")
+	anime_df = anime_to_df(usuario, anime)
+	print clf.predict(anime_df.values)
+
 	# Visualizacao da Arvore do Modelo 1
-	import graphviz
+	""" import graphviz
 
 	cn = []
 	for v in sorted(set(y_train.values)):
@@ -341,4 +267,8 @@ def bla():
 		filled=True, rounded=True,
 		special_characters=True)
 	graph = graphviz.Source(dot_data, format='png')
-	graph.render('modelo_1', view=True)
+	graph.render('modelo_1', view=True) """
+
+
+if __name__ == "__main__":
+	bla()
