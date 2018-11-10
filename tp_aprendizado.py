@@ -90,10 +90,11 @@ def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atribu
 	for atributo in atributos_anime:
 		if atributo == "genres":
 			for genero in generos:
+				genero_bool = "Genre:" + super_generos[genero]
 				if dado["genres"] != None and genero in dado["genres"]:
-					dado_filtrado["Genre:" + super_generos[genero]] = 1
-				else:
-					dado_filtrado["Genre:" + super_generos[genero]] = -1
+					dado_filtrado[genero_bool] = 1
+				elif dado_filtrado.has_key(genero_bool) == False:
+					dado_filtrado[genero_bool] = -1
 			continue
 
 		if atributo == "studios":
@@ -133,7 +134,6 @@ def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atribu
 		else:
 			dado_filtrado[atributo] = dado[atributo]
 	
-	print "DADO FILTRADO ================================="
 	dado_filtrado_json = "[" + json.dumps(dado_filtrado) + "]"
 	df = pd.read_json(dado_filtrado_json)
 	df = df.iloc[[0]]
@@ -169,7 +169,6 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 	generos = list(set(generos))
 	estudios = list(set(estudios))
 
-
 	for anime in lista_animes:
 		dado = {}
 		dado_filtrado = {}
@@ -191,10 +190,11 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 			for atributo in atributos_anime:
 				if atributo == "genres":
 					for genero in generos:
+						genero_bool = "Genre:" + super_generos[genero]
 						if dado["genres"] != None and genero in dado["genres"]:
-							dado_filtrado["Genre:" + super_generos[genero]] = 1
-						else:
-							dado_filtrado["Genre:" + super_generos[genero]] = -1
+							dado_filtrado[genero_bool] = 1
+						elif dado_filtrado.has_key(genero_bool) == False:
+							dado_filtrado[genero_bool] = -1
 					continue
 
 				if atributo == "studios":
@@ -260,8 +260,10 @@ def teste():
 	anime = crawler.Anime.from_file(usuario, "43.json")
 	anime_df = anime_to_df(usuario, anime)
 
-	print x.iloc[[27]]
-	print anime_df
+	x_df = x.iloc[[27]]
+	print x_df.columns
+	print anime_df.columns
+	#print x_df == anime_df
 
 
 if __name__ == "__main__":
