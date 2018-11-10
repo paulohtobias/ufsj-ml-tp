@@ -107,7 +107,12 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 		for atributo in atributos_anime:
 			if atributo == "genres":
 				for genero in generos:
-					genero_bool = "Genre:" + super_generos[genero]
+					try:
+						genero_bool = "Genre:" + super_generos[genero]
+					except:
+						print genero + "n ta na lista de super generos?"
+						print anime.id
+						exit()
 					if dado["genres"] != None and genero in dado["genres"]:
 						dado_filtrado[genero_bool] = 1
 					elif dado_filtrado.has_key(genero_bool) == False:
@@ -181,7 +186,7 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 	global estudios
 
 	for anime in lista_animes:
-		if anime.genres != None:
+		if anime.genres != None and "No genres have been added yet." not in anime.genres:
 			generos.extend(anime.genres)
 		if anime.studios != None:
 			estudios.extend(anime.studios)
@@ -226,6 +231,7 @@ def selecao_completos(anime_dict):
 	return anime_dict["status"] == 2 or anime_dict["status"] == "2"
 
 def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao_completos, force_update = False):
+	# Carregar Dataset
 	x, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
 
 	if verbose:
@@ -237,29 +243,30 @@ def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atr
 		for i in range(11):
 			print i, " - ", class_names[i] + ": ", cont[i]
 
-	# MODELO 1
-
-	# Dividir conjuntos de treinamento e teste
-	x_train, x_test, y_train, y_test = train_test_split(    # Divide conjuntos nao-aleatoriamente
-		x, y, shuffle=False)
-
-	# Treinamento da Arvore de Decisao
+	# Criar classificador
 	from sklearn import tree                    # Importa o pacote de arvore de decisao
 	clf = tree.DecisionTreeClassifier()         # Cria classificador
-	clf = clf.fit(x_train, y_train)             # Treina o classificador
 
-	# Avaliacao dos resultados
-	clf.score(x_test, y_test)
+	# Criar Grid Search Cross Validation
+	from sklearn.model_selection import GridSearchCV
+	parameters = {'max_depth': range(2, 20)}
+	best_clf = GridSearchCV(clf, parameters)
+	best_clf.fit(x, y)
 
-	# Calcula validacao cruzada
-	from sklearn.model_selection import cross_val_score             # Importa o pacote de validacao cruzada
-	scores = cross_val_score(clf, x, y, cv=3)                       # Calcula os scores de 5-folds estratificados
+	# Resultados
+	means = best_clf.cv_results_['mean_test_score']
+	stds = best_clf.cv_results_['std_test_score']
 	if verbose:
-		print scores
+		for mean, std, params in zip(means, stds, best_clf.cv_results_['params']):
+			print("%0.3f (+/-%0.03f) for %r"
+				% (mean, std * 2, params))
+		
+		print 'Melhor max_depth:', best_clf.best_params_['max_depth']
 
 	# Apresentacao dos resultados
-	if verbose:
-		print 'Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), scores.std() * 2)
+	if verbose or True:
+		max_depth = best_clf.best_params_['max_depth']
+		print 'Accuracy: %0.2f (+/- %0.2f)' % (means[max_depth], stds[max_depth] * 2)
 
 	# Visualizacao da Arvore do Modelo 1
 	if gerar_arvore:
@@ -277,7 +284,7 @@ def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atr
 		graph = graphviz.Source(dot_data, format='png')
 		graph.render('modelo_1', view=True)
 	
-	return clf
+	return best_clf
 
 if __name__ == "__main__":
 	# Option handling
