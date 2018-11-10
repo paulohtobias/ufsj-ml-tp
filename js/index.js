@@ -1,5 +1,5 @@
 /****************** Informações Globais ******************/
-var valor_estimativa = 0.5;
+var valor_estimativa = 0.0;
 
 var starCap = {
 	0.0: "No Score", 
