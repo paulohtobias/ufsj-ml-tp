@@ -55,33 +55,38 @@
 				<div class="jumbotron text-center bg-info text-white mt-3">
 					<h1><i class="fas fa-globe-americas"></i> Anime Oráculo</h1>
 				</div>
-
-				<!-- Entradas do Aplicativo -->
-				<div class="row">
-					<!-- Username -->
-					<div class="col-12 col-sm-6">
-						<label for="basic-url">Username:</label>
-						<div class="input-group mb-3">
-							<input type="text" class="form-control" placeholder="jusaragu">
+				
+				<form id="avaliar" action="index.html">
+					<!-- Entradas do Aplicativo -->
+					<div class="row">
+						<!-- Username -->
+						<div class="col-12 col-sm-6">
+							<label for="basic-url">Username:</label>
+							<div class="input-group mb-3">
+								<input id="username" type="text" 
+								class="form-control" placeholder="jusaragu">
+							</div>
+						</div>
+						
+						<!-- Link do Anime -->
+						<div class="col-12 col-sm-6">
+							<label for="basic-url">Link do Anime:</label>
+							<div class="input-group mb-3">
+								<input id="anime" type="text" class="form-control" 
+								placeholder="https://myanimelist.net/anime/21/One_Piece">
+							</div>
 						</div>
 					</div>
-					
-					<!-- Link do Anime -->
-					<div class="col-12 col-sm-6">
-						<label for="basic-url">Link do Anime:</label>
-						<div class="input-group mb-3">
-							<input type="text" class="form-control" 
-							placeholder="https://myanimelist.net/anime/21/One_Piece">
-						</div>
+	
+					<!-- Botão de chamada de avaliação -->
+					<div class="row justify-content-center mb-3">
+						<input type="submit" 
+						class="btn btn-success" value="Avaliar">
 					</div>
-				</div>
+				</form>
 
-				<!-- Botão de chamada de avaliação -->
-				<div class="row justify-content-center mb-3">
-					<button id="avaliar" type="button" 
-					class="btn btn-success">Avaliar</button>
-				</div>
-
+<!----------------------------------------------------------------------------->
+				
 				<!-- Informações de Resposta -->
 				<div class="row mb-3">
 					<!-- Informações do anime -->
@@ -104,28 +109,34 @@
 <script>
 	/* As variaveis valor_estimativa, starCap e starCapClass 
 	 * estão no arquivo ./js/index.js */
+	$("#estimativa").attr("value",valor_estimativa);
+	$("#estimativa").rating({
+		disabled: true,
+		clearButton: "",
+		size: "sm",
+		captionElement: "#caption-estimativa",
+		starCaptions: starCap,
+		starCaptionClasses: starCapClass
+	});
 
-	$("#avaliar").click(function(){
-		$("#estimativa").attr("value",valor_estimativa);
-		$("#estimativa").rating({
-			disabled: true,
-			clearButton: "",
-			size: "sm",
-			captionElement: "#caption-estimativa",
-			starCaptions: starCap,
-			starCaptionClasses: starCapClass
-		});
+	$("#anime").prop('required',true);
+	$("#username").prop('required',true);
+
+	$("#avaliar").submit(function(event){
+		event.preventDefault();
+		var link_anime = getLocation($("#anime").val()).pathname;
+		var username = $("#username").val();
+
 		$.ajax({
 			type: "POST",
 			url: "api_python_avaliacao.php",
 			data: { 
-				url: "",
-				user: ""
+				link: link_anime,
+				user: username
 			}
 		}).done(function( msg ) {
-			alert( "Data Saved: " + msg );
+			//alert(msg);
+			$("#estimativa").rating("update",parseInt(msg)/2);
 		});
-		$("#estimativa").attr("value",5);
-		location.reload(true);
 	});
 </script>

@@ -29,26 +29,8 @@ var starCapClass = {
 };
 
 /************************ Funções ************************/
-$("#avaliar").click(function(){
-	$("#estimativa").attr("value",valor_estimativa);
-	$("#estimativa").rating({
-		disabled: true,
-		clearButton: "",
-		size: "sm",
-		captionElement: "#caption-estimativa",
-		starCaptions: starCap,
-		starCaptionClasses: starCapClass
-	});
-	$.ajax({
-		type: "POST",
-		url: "api_python_avaliacao.php",
-		data: { 
-			url: "",
-			user: ""
-		}
-	}).done(function( msg ) {
-		alert( "Data Saved: " + msg );
-	});
-	$("#estimativa").attr("value",5);
-	location.reload(true);
-});
+var getLocation = function(href) {
+    var l = document.createElement("a");
+    l.href = href;
+    return l;
+};
