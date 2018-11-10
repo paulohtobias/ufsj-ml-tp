@@ -99,16 +99,12 @@
 							</h2>
 						</p>
 						<p>
-							<strong>Sinopse: </strong>
-							<span id="Sinopse"></span>
-						</p>
-						<p>
 							<strong>Gêneros: </strong>
 							<span id="Generos"></span>
 						</p>
 						<p>
 							<strong>Score Global: </strong>
-							<span id="Score" class="text-info"></span>/ 5.00
+							<span id="Score" class="text-info">0.0</span>/ 5.00
 						</p>
 					</div>
 
@@ -137,16 +133,6 @@
 		starCaptionClasses: starCapClass
 	});
 
-	$("#AnimeImage").attr("src", g_AnimeImage);
-	$('#Titulo').text(g_Titulo);
-	$('#Rank').text(g_Rank);
-	$('#Sinopse').text(g_Sinopse);
-	$('#Generos').text(g_Generos);
-	$('#Score').text(g_Score.toFixed(2));
-
-	$("#anime").prop('required',true);
-	$("#username").prop('required',true);
-
 	$("#avaliar").submit(function(event){
 		event.preventDefault();
 		var link_anime = getLocation($("#anime").val()).pathname;
@@ -159,9 +145,22 @@
 				link: link_anime,
 				user: username
 			}
-		}).done(function( msg ) {
-			//alert(msg);
-			$("#estimativa").rating("update",parseInt(msg)/2);
+		}).done(function( saida_str ) {
+			alert(saida_str);
+			var saida = JSON.parse(saida_str);
+
+			var nota = saida.nota;
+			$("#estimativa").rating("update", parseInt(nota)/2);
+
+			var anime = saida.anime;
+			$("#AnimeImage").attr("src", g_AnimeImage);
+			$('#Titulo').text(anime.title);
+			$('#Rank').text(anime.rank);
+			$('#Generos').text(anime.genres.join(", "));
+			$('#Score').text((anime.public_score / 2).toFixed(2));
+
+			$("#anime").prop('required',true);
+			$("#username").prop('required',true);
 		});
 	});
 </script>

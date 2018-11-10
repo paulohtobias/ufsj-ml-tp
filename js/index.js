@@ -3,7 +3,6 @@ var valor_estimativa = 0.0;
 var g_AnimeImage = "https://myanimelist.cdn-dena.com/images/anime/5/87048.jpg";
 var g_Titulo = "Kimi no Na wa";
 var g_Rank = 2;
-var g_Sinopse = "Mitsuha Miyamizu"
 var g_Generos = "Romance, Supernatural, School, Drama";
 var g_Score = 9.16/2;
 

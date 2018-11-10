@@ -333,7 +333,9 @@ if __name__ == "__main__":
 	anime_df = anime_to_df(usuario, anime)
 
 	nota = preditor.predict(anime_df.values)
-	print nota[0]
+	if verbose:
+		print nota[0]
 
 	with open("nota.txt", "w") as f:
-		f.write(str(nota[0]))
+		saida_json = '{"nota": ' + str(nota[0]) + ', "anime": ' + json.dumps(anime.__dict__) + '}'
+		f.write(saida_json)
