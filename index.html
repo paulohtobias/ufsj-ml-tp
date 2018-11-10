@@ -90,8 +90,28 @@
 				<!-- Informações de Resposta -->
 				<div class="row mb-3">
 					<!-- Informações do anime -->
-					<div class="col-12">
-						<p>Coisas do anime</p>
+					<div class="row mb-3">
+					<!-- Informações do anime -->
+					<div class="col-12 col-md-9">
+						<img id="AnimeImage" src="" class="img-thumbnail float-left mr-3">
+						<p>
+							<h2>
+								<span id="Titulo"></span>
+								<small> #<span id="Rank"></span></small>
+							</h2>
+						</p>
+						<p>
+							<strong>Sinopse: </strong>
+							<span id="Sinopse"></span>
+						</p>
+						<p>
+							<strong>Gêneros: </strong>
+							<span id="Generos"></span>
+						</p>
+						<p>
+							<strong>Score Global: </strong>
+							<span id="Score" class="text-info"></span>/ 5.00
+						</p>
 					</div>
 
 					<!-- Avaliação Realizada -->
@@ -118,6 +138,13 @@
 		starCaptions: starCap,
 		starCaptionClasses: starCapClass
 	});
+
+	$("#AnimeImage").attr("src", g_AnimeImage);
+	$('#Titulo').text(g_Titulo);
+	$('#Rank').text(g_Rank);
+	$('#Sinopse').text(g_Sinopse);
+	$('#Generos').text(g_Generos);
+	$('#Score').text(g_Score.toFixed(2));
 
 	$("#anime").prop('required',true);
 	$("#username").prop('required',true);
