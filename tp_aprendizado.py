@@ -142,7 +142,7 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 						dado_filtrado[atributo] = 5
 					continue
 				except:
-					dado_filtrado[atributo] = dado[atributo]
+					dado_filtrado[atributo] = 0
 					continue
 
 			if dado[atributo] == None:
@@ -327,7 +327,7 @@ if __name__ == "__main__":
 		"arvore": arvore_decisao,
 		"mlp": mlp
 	}
-	anime = crawler.Anime.from_url(anime_url, force_update)
+	anime = crawler.Anime.from_url(anime_url, True)
 	preditor = metodos[metodo](usuario, anime, force_update=force_update)
 
 	anime_df = anime_to_df(usuario, anime)

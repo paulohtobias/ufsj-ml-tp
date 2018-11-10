@@ -7,17 +7,17 @@ var g_Generos = "Romance, Supernatural, School, Drama";
 var g_Score = 9.16/2;
 
 var starCap = {
-	0.0: "No Score", 
-	0.5: "Appalling", 
-	1.0: "Horrible", 
-	1.5: "Very Bad", 
-	2.0: "Bad", 
-	2.5: "Average", 
-	3.0: "Fine", 
-	3.5: "Good", 
-	4.0: "Very Good", 
-	4.5: "Great", 
-	5.0: "Masterpiece"
+	0.0: "0: No Score", 
+	0.5: "1: Appalling", 
+	1.0: "2: Horrible", 
+	1.5: "3: Very Bad", 
+	2.0: "4: Bad", 
+	2.5: "5: Average", 
+	3.0: "6: Fine", 
+	3.5: "7: Good", 
+	4.0: "8: Very Good", 
+	4.5: "9: Great", 
+	5.0: "10: Masterpiece"
 };
 
 var starCapClass = {

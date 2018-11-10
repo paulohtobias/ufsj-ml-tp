@@ -75,6 +75,10 @@ class Anime:
 				return int(s[i : i + 4])
 
 			anime.title = soup.find(itemprop = "name").string
+			try:
+				anime.cover = soup.find(class_="ac").get("src")
+			except:
+				anime.cover = ""
 			anime.type = Anime.get_info(soup, "Type", False)
 			anime.episodes = satoi(Anime.get_info(soup, "Episodes", False))
 			anime.year = get_year()

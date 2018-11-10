@@ -153,7 +153,7 @@
 			$("#estimativa").rating("update", parseInt(nota)/2);
 
 			var anime = saida.anime;
-			$("#AnimeImage").attr("src", g_AnimeImage);
+			$("#AnimeImage").attr("src", anime.cover);
 			$('#Titulo').text(anime.title);
 			$('#Rank').text(anime.rank);
 			$('#Generos').text(anime.genres.join(", "));
