@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from optparse import OptionParser
+
 # Importa o pacote train_test_split
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
@@ -71,6 +73,10 @@ super_generos = {
 	"Cars": "Sports",
 	"Yuri": "Adult"
 }
+
+# Opções da linha de comando
+verbose = False
+gerar_arvore = False
 
 def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = None):
 	dado = {}
@@ -151,7 +157,8 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 
 def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = None):
 	anime_dict = anime_to_dict(usuario, anime, atributos_anime, atributos_avaliacao, f_selecao)
-	anime_dict_json = "[" + json.dumps(anime_dict) + "]"
+	anime_dict_json = "[" + json.dumps(anime_dict, indent=4) + "]"
+
 	df = pd.read_json(anime_dict_json)
 	df = df.iloc[[0]]
 
@@ -164,7 +171,7 @@ def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atribu
 	
 	return data
 
-def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, agrupar_episodios = False, force_update = False):
+def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, force_update = False):
 	dados = []
 	lista_animes = crawler.get_lista(usuario)
     
@@ -190,8 +197,8 @@ def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atribut
 
 	return dados
 
-def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, agrupar_episodios = False, force_update = False):
-	lista_final = filtro(usuario, f_selecao, atributos_anime, atributos_avaliacao, agrupar_episodios, force_update)
+def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, force_update = False):
+	lista_final = filtro(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
 
 	df = pd.read_json(json.dumps(lista_final))
 
@@ -215,18 +222,20 @@ def teste():
 	print x_df
 	print anime_df.values
 
+def selecao_completos(anime_dict):
+	return anime_dict["status"] == 2 or anime_dict["status"] == "2"
 
-def bla():
-	usuario = "jusaragu"
-	x, y = carregar_dataset(usuario, lambda d: d["status"] == 2 or d["status"] == "2", force_update=False)
+def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao_completos, force_update = False):
+	x, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
 
-	cont = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	if verbose:
+		cont = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-	for c in y.values:
-		cont[c] += 1
+		for c in y.values:
+			cont[c] += 1
 
-	for i in range(11):
-		print i, " - ", class_names[i] + ": ", cont[i]
+		for i in range(11):
+			print i, " - ", class_names[i] + ": ", cont[i]
 
 	# MODELO 1
 
@@ -245,30 +254,55 @@ def bla():
 	# Calcula validacao cruzada
 	from sklearn.model_selection import cross_val_score             # Importa o pacote de validacao cruzada
 	scores = cross_val_score(clf, x, y, cv=3)                       # Calcula os scores de 5-folds estratificados
-	print scores
+	if verbose:
+		print scores
 
 	# Apresentacao dos resultados
-	print 'Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), scores.std() * 2)
-
-	anime = crawler.Anime.from_file(usuario, "185.json")
-	anime_df = anime_to_df(usuario, anime)
-	print clf.predict(anime_df.values)
+	if verbose:
+		print 'Accuracy: %0.2f (+/- %0.2f)' % (scores.mean(), scores.std() * 2)
 
 	# Visualizacao da Arvore do Modelo 1
-	""" import graphviz
+	if gerar_arvore:
+		import graphviz
 
-	cn = []
-	for v in sorted(set(y_train.values)):
-		cn.append(str(v) + ": " + class_names[v])
+		cn = []
+		for v in sorted(set(y_train.values)):
+			cn.append(str(v) + ": " + class_names[v])
 
-	dot_data = tree.export_graphviz(clf, out_file=None,
-		feature_names=x.columns,
-		class_names=cn,
-		filled=True, rounded=True,
-		special_characters=True)
-	graph = graphviz.Source(dot_data, format='png')
-	graph.render('modelo_1', view=True) """
-
+		dot_data = tree.export_graphviz(clf, out_file=None,
+			feature_names=x.columns,
+			class_names=cn,
+			filled=True, rounded=True,
+			special_characters=True)
+		graph = graphviz.Source(dot_data, format='png')
+		graph.render('modelo_1', view=True)
+	
+	return clf
 
 if __name__ == "__main__":
-	bla()
+	# Option handling
+	parser = OptionParser()
+	parser.add_option("-v", action="store_true", dest = "verbose", default = False)
+	parser.add_option("-u", "--usuario", dest = "usuario")
+	parser.add_option("-a", "--anime", dest = "anime_url")
+	parser.add_option("-m", "--metodo", dest = "metodo")
+	parser.add_option("-f", "--force_update", action="store_true", dest="force_update", default = False)
+
+	(options, args) = parser.parse_args()
+
+	verbose = options.verbose
+	usuario = options.usuario
+	anime_url = options.anime_url
+	metodo = "arvore"
+	force_update = options.force_update
+
+	metodos = {
+		"arvore": arvore_decisao
+	}
+	anime = crawler.Anime.from_url(anime_url, force_update)
+	preditor = arvore_decisao(usuario, anime, force_update=force_update)
+
+	anime_df = anime_to_df(usuario, anime)
+
+	nota = preditor.predict(anime_df.values)
+	print nota[0]
