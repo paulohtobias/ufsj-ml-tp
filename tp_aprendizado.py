@@ -217,16 +217,6 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 	
 	return data, target
 
-def teste():
-	usuario = "zarem101"
-	x, y = carregar_dataset(usuario, lambda d: d["status"] == 2 or d["status"] == "2", force_update=False)
-	anime = crawler.Anime.from_file(usuario, "43.json")
-	anime_df = anime_to_df(usuario, anime)
-
-	x_df = x.iloc[[27]]
-	print x_df
-	print anime_df.values
-
 def selecao_completos(anime_dict):
 	return anime_dict["status"] == 2 or anime_dict["status"] == "2"
 
@@ -264,7 +254,7 @@ def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atr
 		print 'Melhor max_depth:', best_clf.best_params_['max_depth']
 
 	# Apresentacao dos resultados
-	if verbose or True:
+	if verbose:
 		max_depth = best_clf.best_params_['max_depth']
 		print 'Accuracy: %0.2f (+/- %0.2f)' % (means[max_depth], stds[max_depth] * 2)
 
@@ -286,10 +276,36 @@ def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atr
 	
 	return best_clf
 
+def mlp(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao_completos, force_update = False):
+	from sklearn.preprocessing import StandardScaler
+	from sklearn.neural_network import MLPClassifier
+	from sklearn.metrics import classification_report,confusion_matrix
+	
+	# Carregar Dataset
+	X, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
+
+	X_train, X_test, y_train, y_test = train_test_split(X, y)
+
+	scaler = StandardScaler()
+
+	# Fit only to the training data
+	scaler.fit(X_train)
+
+	StandardScaler(copy=True, with_mean=True, with_std=True)
+
+	# Now apply the transformations to the data:
+	X_train = scaler.transform(X_train)
+	X_test = scaler.transform(X_test)
+
+	mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
+	mlp.fit(X_train,y_train)
+
+	return mlp
+
 if __name__ == "__main__":
 	# Option handling
 	parser = OptionParser()
-	parser.add_option("-v", action="store_true", dest = "verbose", default = False)
+	parser.add_option("-q", action = "store_false", dest = "verbose", default = True)
 	parser.add_option("-u", "--usuario", dest = "usuario")
 	parser.add_option("-a", "--anime", dest = "anime_url")
 	parser.add_option("-m", "--metodo", dest = "metodo")
@@ -300,16 +316,24 @@ if __name__ == "__main__":
 	verbose = options.verbose
 	usuario = options.usuario
 	anime_url = options.anime_url
-	metodo = "arvore"
+	metodo = options.metodo
 	force_update = options.force_update
 
+	if metodo == None:
+		print "Método necessário"
+		exit()
+
 	metodos = {
-		"arvore": arvore_decisao
+		"arvore": arvore_decisao,
+		"mlp": mlp
 	}
 	anime = crawler.Anime.from_url(anime_url, force_update)
-	preditor = arvore_decisao(usuario, anime, force_update=force_update)
+	preditor = metodos[metodo](usuario, anime, force_update=force_update)
 
 	anime_df = anime_to_df(usuario, anime)
 
 	nota = preditor.predict(anime_df.values)
 	print nota[0]
+
+	with open("nota.txt", "w") as f:
+		f.write(str(nota[0]))
