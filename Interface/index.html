@@ -70,14 +70,16 @@
 					<div class="col-12 col-sm-6">
 						<label for="basic-url">Link do Anime:</label>
 						<div class="input-group mb-3">
-							<input type="text" class="form-control" placeholder="https://myanimelist.net/anime/21/One_Piece">
+							<input type="text" class="form-control" 
+							placeholder="https://myanimelist.net/anime/21/One_Piece">
 						</div>
 					</div>
 				</div>
 
 				<!-- Botão de chamada de avaliação -->
 				<div class="row justify-content-center mb-3">
-					<button type="button" class="btn btn-success">Avaliar</button>
+					<button id="avaliar" type="button" 
+					class="btn btn-success">Avaliar</button>
 				</div>
 
 				<!-- Informações de Resposta -->
@@ -102,18 +104,28 @@
 <script>
 	/* As variaveis valor_estimativa, starCap e starCapClass 
 	 * estão no arquivo ./js/index.js */
-	$("#estimativa").attr("value",valor_estimativa);
-	$("#estimativa").rating({
-		disabled: true,
-		clearButton: "",
-		size: "sm",
-		captionElement: "#caption-estimativa",
-		starCaptions: starCap,
-		starCaptionClasses: starCapClass
+
+	$("#avaliar").click(function(){
+		$("#estimativa").attr("value",valor_estimativa);
+		$("#estimativa").rating({
+			disabled: true,
+			clearButton: "",
+			size: "sm",
+			captionElement: "#caption-estimativa",
+			starCaptions: starCap,
+			starCaptionClasses: starCapClass
+		});
+		$.ajax({
+			type: "POST",
+			url: "api_python_avaliacao.php",
+			data: { 
+				url: "",
+				user: ""
+			}
+		}).done(function( msg ) {
+			alert( "Data Saved: " + msg );
+		});
+		$("#estimativa").attr("value",5);
+		location.reload(true);
 	});
 </script>
-
-<?php
-	echo system("ls");
-
-?>
