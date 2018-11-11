@@ -82,37 +82,42 @@
 					<div class="row justify-content-center mb-3">
 						<input type="submit" 
 						class="btn btn-success" value="Avaliar">
+						<br/>
 					</div>
 				</form>
+				<div id="Loading" class="col-12 mb-4 hidden">
+					<div class="loader"></div>
+				</div>
 
 <!----------------------------------------------------------------------------->
-				
-				<!-- Informações de Resposta -->
-				<div class="row mb-3">
-					<!-- Informações do anime -->
-					<div class="col-12 col-md-9">
-						<img id="AnimeImage" src="" class="img-thumbnail float-left mr-3">
-						<p>
-							<h2>
-								<span id="Titulo"></span>
-								<small> #<span id="Rank"></span></small>
-							</h2>
-						</p>
-						<p>
-							<strong>Gêneros: </strong>
-							<span id="Generos"></span>
-						</p>
-						<p>
-							<strong>Score Global: </strong>
-							<span id="Score" class="text-info">0.0</span>/ 5.00
-						</p>
-					</div>
+				<div id="AnimeInfo" class="m-0 p-0 hidden">
+					<!-- Informações de Resposta -->
+					<div class="row mb-3">
+						<!-- Informações do anime -->
+						<div class="col-12 col-md-9">
+							<img id="AnimeImage" src="" class="img-thumbnail float-left mr-3">
+							<p>
+								<h2>
+									<span id="Titulo"></span>
+									<small> #<span id="Rank"></span></small>
+								</h2>
+							</p>
+							<p>
+								<strong>Gêneros: </strong>
+								<span id="Generos"></span>
+							</p>
+							<p>
+								<strong>Score Global: </strong>
+								<span id="Score" class="text-info">0.0</span>/ 5.00
+							</p>
+						</div>
 
-				</div>
-				<!-- Avaliação Realizada -->
-				<div class="col-12 text-center">
-					<span id="caption-estimativa"></span>
-					<input id="estimativa" type="text" class="rating-loading">
+					</div>
+					<!-- Avaliação Realizada -->
+					<div class="col-12 text-center mb-4">
+						<span id="caption-estimativa"></span>
+						<input id="estimativa" type="text" class="rating-loading">
+					</div>
 				</div>
 			</div>
 		</div>
@@ -135,6 +140,9 @@
 
 	$("#avaliar").submit(function(event){
 		event.preventDefault();
+		document.getElementById("AnimeInfo").classList.add("hidden");
+		document.getElementById("Loading").classList.remove("hidden");
+
 		var link_anime = getLocation($("#anime").val()).pathname;
 		var username = $("#username").val();
 
@@ -146,14 +154,14 @@
 				user: username
 			}
 		}).done(function( saida_str ) {
-			alert(saida_str);
+			//alert(saida_str);
 			var saida = JSON.parse(saida_str);
 
 			var nota = saida.nota;
 			$("#estimativa").rating("update", parseInt(nota)/2);
 
 			var anime = saida.anime;
-			$("#AnimeImage").attr("src", anime.cover);
+			$("#AnimeImage").attr("src", anime.cover || "http://old.collectorscache.com/StoreModules/ProductImages/389/yugiohcardbackdeckprotectors.jpg");
 			$('#Titulo').text(anime.title);
 			$('#Rank').text(anime.rank);
 			$('#Generos').text(anime.genres.join(", "));
@@ -161,6 +169,8 @@
 
 			$("#anime").prop('required',true);
 			$("#username").prop('required',true);
+			document.getElementById("AnimeInfo").classList.remove("hidden");
+			document.getElementById("Loading").classList.add("hidden");
 		});
 	});
 </script>
