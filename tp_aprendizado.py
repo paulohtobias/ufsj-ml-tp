@@ -14,6 +14,7 @@ clf = tree.DecisionTreeClassifier()         # Cria classificador
 import json
 import crawler
 import pandas as pd
+import random
 
 class_names = ["No Score", "Appalling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"]
 
@@ -144,6 +145,10 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 				except:
 					dado_filtrado[atributo] = 0
 					continue
+			
+			if atributo == "user_score":
+				dado_filtrado[atributo] = (dado[atributo] - 1) / 2 + 1
+				continue
 
 			if dado[atributo] == None:
 				dado_filtrado[atributo] = 0
@@ -218,7 +223,8 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 	return data, target
 
 def selecao_completos(anime_dict):
-	return anime_dict["status"] == 2 or anime_dict["status"] == "2"
+	return anime_dict["user_score"] != None and anime_dict["user_score"] > 0
+	#return anime_dict["status"] == 2 or anime_dict["status"] == "2"
 
 def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao_completos, force_update = False):
 	# Carregar Dataset
@@ -302,6 +308,18 @@ def mlp(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_aval
 
 	return mlp
 
+def calcular_nota_anime(y, nota):
+	qnt_notas = [0]*11
+	for nt in y.values: qnt_notas[nt-1] += 1
+	print qnt_notas
+	
+	nota_real = (qnt_notas[nota*2 - 1] + qnt_notas[nota*2])
+	if(qnt_notas[nota*2-1]/nota_real < random.uniform(0,1)):
+		nota_final = nota*2 - 1
+	else: 
+		nota_final = nota*2 
+	return nota_final
+
 if __name__ == "__main__":
 	# Option handling
 	parser = OptionParser()
@@ -333,8 +351,10 @@ if __name__ == "__main__":
 	anime_df = anime_to_df(usuario, anime)
 
 	nota = preditor.predict(anime_df.values)
+	x, y = carregar_dataset(usuario, selecao_completos)
+
 	if verbose:
-		print nota[0]
+		print calcular_nota_anime(y, nota)
 
 	with open("nota.txt", "w") as f:
 		saida_json = '{"nota": ' + str(nota[0]) + ', "anime": ' + json.dumps(anime.__dict__) + '}'
