@@ -10,11 +10,14 @@ from sklearn import preprocessing
 from sklearn import tree                    # Importa o pacote de arvore de decisao
 clf = tree.DecisionTreeClassifier()         # Cria classificador
 
+from imblearn.over_sampling import SMOTE, ADASYN
+
 #Importa o crawler
 import json
 import crawler
 import pandas as pd
 import random
+import selecao
 
 class_names = ["No Score", "Appalling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"]
 
@@ -75,6 +78,9 @@ super_generos = {
 	"Yuri": "Adult"
 }
 
+# Contagem de todos os scores que o usuário realizou
+score_count = [0] * 11
+
 # Opções da linha de comando
 verbose = False
 gerar_arvore = False
@@ -103,7 +109,7 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 
 	for atributo in atributos_avaliacao_todos:
 		dado[atributo] = avaliacao[atributo]
-	
+
 	if f_selecao == None or f_selecao(dado) == True:
 		for atributo in atributos_anime:
 			if atributo == "genres":
@@ -145,10 +151,6 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 				except:
 					dado_filtrado[atributo] = 0
 					continue
-			
-			if atributo == "user_score":
-				dado_filtrado[atributo] = (dado[atributo] - 1) / 2 + 1
-				continue
 
 			if dado[atributo] == None:
 				dado_filtrado[atributo] = 0
@@ -159,7 +161,13 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 			if dado[atributo] == None:
 				dado_filtrado[atributo] = 0
 			else:
-				dado_filtrado[atributo] = dado[atributo]
+				if atributo == "user_score":
+					#! Aparentemente aqui se situa o score do usuário
+					# print str((dado[atributo] - 1) / 2 + 1)
+					score_count[(dado[atributo])] += 1
+					dado_filtrado[atributo] = (dado[atributo] - 1) / 2 + 1
+				else:
+					dado_filtrado[atributo] = dado[atributo]
 		
 		return dado_filtrado
 	
@@ -167,11 +175,11 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 
 def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = None):
 	anime_dict = anime_to_dict(usuario, anime, atributos_anime, atributos_avaliacao, f_selecao)
-	anime_dict_json = "[" + json.dumps(anime_dict, indent=4) + "]"
+	anime_dict_json = "[" + json.dumps(anime_dict) + "]"
 
 	df = pd.read_json(anime_dict_json)
 	df = df.iloc[[0]]
-
+	
 	data = df.drop('user_score', axis = 1)
 
 	le = preprocessing.LabelEncoder()
@@ -222,11 +230,7 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 	
 	return data, target
 
-def selecao_completos(anime_dict):
-	return anime_dict["user_score"] != None and anime_dict["user_score"] > 0
-	#return anime_dict["status"] == 2 or anime_dict["status"] == "2"
-
-def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao_completos, force_update = False):
+def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao.avaliados, force_update = False):
 	# Carregar Dataset
 	x, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
 
@@ -262,7 +266,7 @@ def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atr
 	# Apresentacao dos resultados
 	if verbose:
 		max_depth = best_clf.best_params_['max_depth']
-		print 'Accuracy: %0.2f (+/- %0.2f)' % (means[max_depth], stds[max_depth] * 2)
+		print 'Accuracy: %0.2f (+/- %0.2f)' % (means[max_depth - 2], stds[max_depth - 2] * 2)
 
 	# Visualizacao da Arvore do Modelo 1
 	if gerar_arvore:
@@ -282,7 +286,7 @@ def arvore_decisao(usuario, anime, atributos_anime = atributos_anime_padrao, atr
 	
 	return best_clf
 
-def mlp(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao_completos, force_update = False):
+def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao.avaliados, force_update = False):
 	from sklearn.preprocessing import StandardScaler
 	from sklearn.neural_network import MLPClassifier
 	from sklearn.metrics import classification_report,confusion_matrix
@@ -303,22 +307,22 @@ def mlp(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_aval
 	X_train = scaler.transform(X_train)
 	X_test = scaler.transform(X_test)
 
+	qtd_atributos = len(atributos_anime) + len(atributos_avaliacao)
+	#mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
+	#mlp = MLPClassifier(hidden_layer_sizes=(qtd_atributos,qtd_atributos),max_iter=500)
+	#mlp = MLPClassifier(hidden_layer_sizes=(qtd_atributos,qtd_atributos,qtd_atributos),max_iter=500)
 	mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
 	mlp.fit(X_train,y_train)
 
 	return mlp
 
-def calcular_nota_anime(y, nota):
-	qnt_notas = [0]*11
-	for nt in y.values: qnt_notas[nt-1] += 1
-	print qnt_notas
-	
-	nota_real = (qnt_notas[nota*2 - 1] + qnt_notas[nota*2])
-	if(qnt_notas[nota*2-1]/nota_real < random.uniform(0,1)):
-		nota_final = nota*2 - 1
-	else: 
-		nota_final = nota*2 
-	return nota_final
+def calcular_nota_anime(nota):
+	print "Essa é a nota: " + str(nota)
+	print score_count
+	nota_real = (score_count[nota*2 - 1] + score_count[nota*2])
+	if(score_count[nota*2-1]/nota_real < random.uniform(0,1)):
+		return nota*2 - 1
+	return nota*2
 
 if __name__ == "__main__":
 	# Option handling
@@ -346,15 +350,14 @@ if __name__ == "__main__":
 		"mlp": mlp
 	}
 	anime = crawler.Anime.from_url(anime_url, True)
-	preditor = metodos[metodo](usuario, anime, force_update=force_update)
+	preditor = metodos[metodo](usuario, force_update=force_update)
 
 	anime_df = anime_to_df(usuario, anime)
 
 	nota = preditor.predict(anime_df.values)
-	x, y = carregar_dataset(usuario, selecao_completos)
 
 	if verbose:
-		print calcular_nota_anime(y, nota)
+		print calcular_nota_anime(nota[0])
 
 	with open("nota.txt", "w") as f:
 		saida_json = '{"nota": ' + str(nota[0]) + ', "anime": ' + json.dumps(anime.__dict__) + '}'
