@@ -10,7 +10,7 @@ from sklearn import preprocessing
 from sklearn import tree                    # Importa o pacote de arvore de decisao
 clf = tree.DecisionTreeClassifier()         # Cria classificador
 
-from imblearn.over_sampling import SMOTE, ADASYN
+from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN
 
 #Importa o crawler
 import json
@@ -165,7 +165,8 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 					#! Aparentemente aqui se situa o score do usuário
 					# print str((dado[atributo] - 1) / 2 + 1)
 					score_count[(dado[atributo])] += 1
-					dado_filtrado[atributo] = (dado[atributo] - 1) / 2 + 1
+					#dado_filtrado[atributo] = (dado[atributo] - 1) / 2 + 1
+					dado_filtrado[atributo] = dado[atributo]
 				else:
 					dado_filtrado[atributo] = dado[atributo]
 		
@@ -233,6 +234,7 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao.avaliados, force_update = False):
 	# Carregar Dataset
 	x, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
+	x_r, y_r = RandomOverSampler(random_state=0).fit_resample(x, y)
 
 	if verbose:
 		cont = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -251,7 +253,7 @@ def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_
 	from sklearn.model_selection import GridSearchCV
 	parameters = {'max_depth': range(2, 20)}
 	best_clf = GridSearchCV(clf, parameters)
-	best_clf.fit(x, y)
+	best_clf.fit(x_r, y_r)
 
 	# Resultados
 	means = best_clf.cv_results_['mean_test_score']
@@ -357,7 +359,8 @@ if __name__ == "__main__":
 	nota = preditor.predict(anime_df.values)
 
 	if verbose:
-		print calcular_nota_anime(nota[0])
+		#print calcular_nota_anime(nota[0])
+		print nota[0]
 
 	with open("nota.txt", "w") as f:
 		saida_json = '{"nota": ' + str(nota[0]) + ', "anime": ' + json.dumps(anime.__dict__) + '}'
