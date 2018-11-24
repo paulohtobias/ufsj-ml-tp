@@ -295,6 +295,7 @@ def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao =
 	
 	# Carregar Dataset
 	X, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
+	x_r, y_r = RandomOverSampler(random_state=0).fit_resample(X, y)
 
 	X_train, X_test, y_train, y_test = train_test_split(X, y)
 
@@ -310,11 +311,14 @@ def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao =
 	X_test = scaler.transform(X_test)
 
 	qtd_atributos = len(atributos_anime) + len(atributos_avaliacao)
+	print qtd_atributos
 	#mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
 	#mlp = MLPClassifier(hidden_layer_sizes=(qtd_atributos,qtd_atributos),max_iter=500)
 	#mlp = MLPClassifier(hidden_layer_sizes=(qtd_atributos,qtd_atributos,qtd_atributos),max_iter=500)
-	mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
+	mlp = MLPClassifier(hidden_layer_sizes=(13,13,13,13),max_iter=500,learning_rate='adaptive')
 	mlp.fit(X_train,y_train)
+	if verbose:
+		print "Accuracy: ", mlp.score(X_train, y_train)
 
 	return mlp
 
