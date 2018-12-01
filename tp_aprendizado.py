@@ -6,9 +6,6 @@ from optparse import OptionParser
 from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 
-# Cria classificador
-from sklearn import tree                    # Importa o pacote de arvore de decisao
-clf = tree.DecisionTreeClassifier()         # Cria classificador
 from sklearn.model_selection import GridSearchCV
 
 from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN
@@ -124,7 +121,7 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 					if dado["genres"] != None and genero in dado["genres"]:
 						dado_filtrado[genero_bool] = 1
 					elif dado_filtrado.has_key(genero_bool) == False:
-						dado_filtrado[genero_bool] = -1
+						dado_filtrado[genero_bool] = 0
 				continue
 
 			if atributo == "studios":
@@ -132,7 +129,7 @@ def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atri
 					if dado["studios"] != None and estudio in dado["studios"]:
 						dado_filtrado["Studio:" + estudio] = 1
 					else:
-						dado_filtrado["Studio:" + estudio] = -1
+						dado_filtrado["Studio:" + estudio] = 0
 				continue
 
 			if "episodes" in atributo:
@@ -234,17 +231,10 @@ def carregar_dataset(usuario, f_selecao, atributos_anime = atributos_anime_padra
 
 def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao.avaliados, force_update = False):
 	# Carregar Dataset
-	x, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
-	x_r, y_r = RandomOverSampler(random_state=0).fit_resample(x, y)
+	X, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
+	X_r, y_r = RandomOverSampler(random_state=0).fit_resample(X, y)
 
-	if verbose:
-		cont = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
-		for c in y.values:
-			cont[c] += 1
-
-		for i in range(11):
-			print i, " - ", class_names[i] + ": ", cont[i]
+	X_train, X_test, y_train, y_test = train_test_split(X_r, y_r)
 
 	# Criar classificador
 	from sklearn import tree                    # Importa o pacote de arvore de decisao
@@ -253,7 +243,7 @@ def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_
 	# Criar Grid Search Cross Validation
 	parameters = {'max_depth': range(2, 20)}
 	best_clf = GridSearchCV(clf, parameters)
-	best_clf.fit(x_r, y_r)
+	best_clf.fit(X_train, y_train)
 
 	# Resultados
 	means = best_clf.cv_results_['mean_test_score']
@@ -269,22 +259,7 @@ def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_
 	if verbose:
 		max_depth = best_clf.best_params_['max_depth']
 		print 'Accuracy: %0.2f (+/- %0.2f)' % (means[max_depth - 2], stds[max_depth - 2] * 2)
-
-	# Visualizacao da Arvore do Modelo 1
-	if gerar_arvore:
-		import graphviz
-
-		cn = []
-		for v in sorted(set(y_train.values)):
-			cn.append(str(v) + ": " + class_names[v])
-
-		dot_data = tree.export_graphviz(best_clf, out_file=None,
-			feature_names=x.columns,
-			class_names=cn,
-			filled=True, rounded=True,
-			special_characters=True)
-		graph = graphviz.Source(dot_data, format='png')
-		graph.render('modelo_1', view=True)
+		print "score: " + str(best_clf.score(X_test, y_test))
 	
 	return best_clf
 
@@ -314,38 +289,84 @@ def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao =
 	print qtd_atributos
 
 	import numpy as np
-	parameters = {'solver': ['lbfgs'], 'max_iter': [500,1000,1500], 'alpha': 10.0 ** -np.arange(1, 7), 'hidden_layer_sizes':np.arange(5, 13), 'random_state':[0,1,2,3,4,5,6,7,8,9]}
+	parameters = {'solver': ['lbfgs'], 'max_iter': [1000], 'alpha': 10.0 ** -np.arange(4, 7), 'hidden_layer_sizes':np.arange(10, 12), 'random_state':[0,1,2,3,4]}
 	clf_grid = GridSearchCV(MLPClassifier(), parameters, n_jobs=-1)
 	clf_grid.fit(X_train, y_train)
 
 	# Resultados
-	means = best_clf.cv_results_['mean_test_score']
-	stds = best_clf.cv_results_['std_test_score']
+	means = clf_grid.cv_results_['mean_test_score']
+	stds = clf_grid.cv_results_['std_test_score']
 	if verbose:
 		maior = (-1, -1)
-		for mean, std, params in zip(means, stds, best_clf.cv_results_['params']):
+		for mean, std, params in zip(means, stds, clf_grid.cv_results_['params']):
 			if mean > maior[0]:
 				maior = (mean, std)
 			print("%0.3f (+/-%0.03f) for %r"
 				% (mean, std * 2, params))
 		
-		print 'Melhores parametros:', best_clf.best_params_
+		print 'Melhores parametros:', clf_grid.best_params_
 
 	# Apresentacao dos resultados
 	if verbose:
 		print 'Accuracy: %0.2f (+/- %0.2f)' % maior
+		print "score: " + str(clf_grid.score(X_test, y_test))
 
 	return clf_grid
 
 	#mlp = MLPClassifier(hidden_layer_sizes=(13,13,13),max_iter=500)
 	#mlp = MLPClassifier(hidden_layer_sizes=(qtd_atributos,qtd_atributos),max_iter=500)
 	#mlp = MLPClassifier(hidden_layer_sizes=(qtd_atributos,qtd_atributos,qtd_atributos),max_iter=500)
-	mlp = MLPClassifier(hidden_layer_sizes=(13,13,13,13),max_iter=500,learning_rate='adaptive')
-	mlp.fit(X_train,y_train)
-	if verbose:
-		print "Accuracy: ", mlp.score(X_train, y_train)
+	#mlp = MLPClassifier(hidden_layer_sizes=(13,13,13,13),max_iter=500,learning_rate='adaptive')
+	#mlp.fit(X_train,y_train)
+	#if verbose:
+	#	print "Accuracy: ", mlp.score(X_train, y_train)
+	#
+	#return mlp
 
-	return mlp
+def naive_bayes(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = selecao.avaliados, force_update = False):
+	from sklearn.preprocessing import StandardScaler
+	from sklearn.naive_bayes import MultinomialNB
+	from sklearn.metrics import classification_report,confusion_matrix
+
+	# Carregar Dataset
+	X, y = carregar_dataset(usuario, f_selecao, atributos_anime, atributos_avaliacao, force_update)
+	X_r, y_r = RandomOverSampler(random_state=0).fit_resample(X, y)
+
+	X_train, X_test, y_train, y_test = train_test_split(X_r, y_r)
+
+	#qtd_atributos = len(atributos_anime) + len(atributos_avaliacao)
+	#print qtd_atributos
+
+	#import numpy as np
+	#parameters = {'alpha': 0.1 * np.arange(0, 10), 'fit_prior':[True,False]}
+	parameters = {'alpha': [1.0]}
+	#Definindo o método
+	modelo = GridSearchCV(MultinomialNB(), parameters, n_jobs=-1)
+	modelo.fit(X_train, y_train)
+
+	# Resultados
+	means = modelo.cv_results_['mean_test_score']
+	stds = modelo.cv_results_['std_test_score']
+	if verbose:
+		maior = (-1, -1)
+		for mean, std, params in zip(means, stds, modelo.cv_results_['params']):
+			if mean > maior[0]:
+				maior = (mean, std)
+			print("%0.3f (+/-%0.03f) for %r"
+				% (mean, std * 2, params))
+		
+		print 'Melhores parametros:', modelo.best_params_
+
+	# Apresentacao dos resultados
+	if verbose:
+		print 'Accuracy: %0.2f (+/- %0.2f)' % maior
+		print "score: " + str(modelo.score(X_test, y_test))
+
+	
+	#modelo = MultinomialNB()
+	#Aplicando o método, com os tweets vetorizados e as classificações
+
+	return modelo
 
 def calcular_nota_anime(nota):
 	print "Essa é a nota: " + str(nota)
@@ -378,7 +399,8 @@ if __name__ == "__main__":
 
 	metodos = {
 		"arvore": arvore_decisao,
-		"mlp": mlp
+		"mlp": mlp,
+		"naive_bayes": naive_bayes
 	}
 	anime = crawler.Anime.from_url(anime_url, True)
 	preditor = metodos[metodo](usuario, force_update=force_update)
