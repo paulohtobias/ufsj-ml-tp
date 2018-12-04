@@ -46,7 +46,7 @@ class Anime:
 		#Verificar se o anime já está salvo na cache
 		try:
 			if ingnore_cache:
-				raise Exception() #Pra cair no bloco ecxept
+				raise Exception() #Pra cair no bloco except
 			with open(anime.get_nome_arq(), "r") as arquivo:
 				#todo: isso é muito roubo e não sei se vai dar certo assim. Precisa testar mais.
 				#Em último caso tem que setar cada atributo separadamente.

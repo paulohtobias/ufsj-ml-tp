@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 from optparse import OptionParser
 
 # Importa o pacote train_test_split
@@ -10,12 +11,15 @@ from sklearn.model_selection import GridSearchCV
 
 from imblearn.over_sampling import RandomOverSampler, SMOTE, ADASYN
 
-#Importa o crawler
+# Importa o crawler
 import json
 import crawler
 import pandas as pd
 import random
 import selecao
+
+# Medir o tempo de execução
+import timing
 
 class_names = ["No Score", "Appalling", "Horrible", "Very Bad", "Bad", "Average", "Fine", "Good", "Very Good", "Great", "Masterpiece"]
 
@@ -81,7 +85,7 @@ score_count = [0] * 11
 
 # Opções da linha de comando
 verbose = False
-gerar_arvore = False
+teste = False
 
 def anime_to_dict(usuario, anime, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, f_selecao = None):
 	dado = {}
@@ -190,7 +194,7 @@ def anime_to_df(usuario, anime, atributos_anime = atributos_anime_padrao, atribu
 
 def filtro(usuario, f_selecao, atributos_anime = atributos_anime_padrao, atributos_avaliacao = atributos_avaliacao_padrao, force_update = False):
 	dados = []
-	lista_animes = crawler.get_lista(usuario)
+	lista_animes = crawler.get_lista(usuario, force_update=force_update)
     
 	#print lista_animes
 
@@ -256,10 +260,14 @@ def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_
 		print 'Melhor max_depth:', best_clf.best_params_['max_depth']
 
 	# Apresentacao dos resultados
-	if verbose:
+	if verbose or teste:
 		max_depth = best_clf.best_params_['max_depth']
-		print 'Accuracy: %0.2f (+/- %0.2f)' % (means[max_depth - 2], stds[max_depth - 2] * 2)
-		print "score: " + str(best_clf.score(X_test, y_test))
+		if teste == False:
+			print "Accuracy:",
+		print "%0.2f (+/- %0.2f)" % (means[max_depth - 2], stds[max_depth - 2] * 2)
+		if teste == False:
+			print "Score:",
+		print str(best_clf.score(X_test, y_test))
 	
 	return best_clf
 
@@ -307,9 +315,13 @@ def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao =
 		print 'Melhores parametros:', clf_grid.best_params_
 
 	# Apresentacao dos resultados
-	if verbose:
-		print 'Accuracy: %0.2f (+/- %0.2f)' % maior
-		print "score: " + str(clf_grid.score(X_test, y_test))
+	if verbose or teste:
+		if teste == False:
+			print "Accuracy:",
+		print "%0.2f (+/- %0.2f)" % maior
+		if teste == False:
+			print "Score:",
+		print str(clf_grid.score(X_test, y_test))
 
 	return clf_grid
 
@@ -358,9 +370,13 @@ def naive_bayes(usuario, atributos_anime = atributos_anime_padrao, atributos_ava
 		print 'Melhores parametros:', modelo.best_params_
 
 	# Apresentacao dos resultados
-	if verbose:
-		print 'Accuracy: %0.2f (+/- %0.2f)' % maior
-		print "score: " + str(modelo.score(X_test, y_test))
+	if verbose or teste:
+		if teste == False:
+			print "Accuracy:",
+		print "%0.2f (+/- %0.2f)" % maior
+		if teste == False:
+			print "Score:",
+		print str(modelo.score(X_test, y_test))
 
 	
 	#modelo = MultinomialNB()
@@ -394,25 +410,33 @@ if __name__ == "__main__":
 	force_update = options.force_update
 
 	if metodo == None:
-		print "Método necessário"
+		sys.stderr.write("Método necessário\n")
 		exit()
+	
+	if usuario == None:
+		sys.stderr.write("Usuário necessário\n")
+		exit()
+	
+	if anime_url == None:
+		teste = True
 
 	metodos = {
 		"arvore": arvore_decisao,
 		"mlp": mlp,
 		"naive_bayes": naive_bayes
 	}
-	anime = crawler.Anime.from_url(anime_url, True)
 	preditor = metodos[metodo](usuario, force_update=force_update)
 
-	anime_df = anime_to_df(usuario, anime)
+	if anime_url != None:
+		anime = crawler.Anime.from_url(anime_url, force_update)
+		anime_df = anime_to_df(usuario, anime)
 
-	nota = preditor.predict(anime_df.values)
+		nota = preditor.predict(anime_df.values)
 
-	if verbose:
-		#print calcular_nota_anime(nota[0])
-		print nota[0]
+		if verbose:
+			#print calcular_nota_anime(nota[0])
+			print nota[0]
 
-	with open("nota.txt", "w") as f:
-		saida_json = '{"nota": ' + str(nota[0]) + ', "anime": ' + json.dumps(anime.__dict__) + '}'
-		f.write(saida_json)
+		with open("nota.txt", "w") as f:
+			saida_json = '{"nota": ' + str(nota[0]) + ', "anime": ' + json.dumps(anime.__dict__) + '}'
+			f.write(saida_json)

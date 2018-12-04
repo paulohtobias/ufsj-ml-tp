@@ -1,5 +1,2 @@
 to-do:
-	- (FEITO) agrupar classes
-	- naive bayes
-	- (FEITA) balancear base (oversampling)
-	- modelar corretamente as redes neurais (baseado nos agrupamentos)
+	- melhorar a mecanica de ignorar a cache

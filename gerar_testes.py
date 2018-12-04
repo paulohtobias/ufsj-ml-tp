@@ -3,79 +3,47 @@
 import os
 import random
 import json
+import subprocess
 
-total_animes = 10
+separador = ","
+
 faixa = 0 # 0, 1 ou 2
+qtd_usuarios = 2
 
-def cn(nota):
-	return int((nota - 1) / 2 + 1)
+nmin = 0
+try:
+	with open("resultados.csv", "r") as f:
+		nmin = int(f.readlines()[-2].split(separador)[0]) + 1
+except:
+	pass
 
-def ftol(arquivo):
-	with open("data/animes/" + arquivo) as f:
-		anime = json.loads(f.read())
-		return anime["url"]
-	raise Exception("Problema ao pegar a url de " + str(arquivo))
+nmax = nmin + qtd_usuarios
 
-animes_dict = {}
-print "Listando os animes da base..."
-for (dirpath, dirnames, filenames) in os.walk("data/animes"):
-	for arquivo in filenames:
-		animes_dict[arquivo] = ftol(arquivo)
-	print "feito."
-	break
+print nmin, nmax
+#exit()
 
-for (dirpath, dirnames, filenames) in os.walk("data/users"):
-	usuarios = sorted(dirnames)
-	
-	inicio = len(usuarios) / 3 * faixa
-	fim = min([inicio + len(usuarios) / 3, len(usuarios)])
-	
-	for usuario in usuarios[inicio:fim]:
-		for (dirpath2, dirnames2, filenames2) in os.walk("data/users/" + usuario):
-			avaliacoes = {}
-			notas = [0] * 6
-			notas_existentes = []
-			for arquivo in filenames2:
-				try:
-					with open("data/users/" + usuario + "/" + arquivo) as f:
-						avaliacao = json.loads(f.read())
-						nota = cn(int(avaliacao["user_score"]))
-
-						avaliacao["user_score"] = nota
-						avaliacao["url"] = animes_dict[arquivo]
-						
-						notas[nota] += 1
-						
-						if avaliacoes.has_key(nota) == False:
-							avaliacoes[nota] = []
-							notas_existentes.append(nota)
-
-						avaliacoes[nota].append(avaliacao)
-				except:
-					pass
+with open("resultados.csv", "a") as f:
+	for classificador in ["arvore", "mlp", "naive_bayes"]:
+		f.write(classificador + "\n")
+		f.write(separador.join(["numero", "username", "accuracy", "score"]) + "\n")
+		for (dirpath, dirnames, filenames) in os.walk("data/users"):
+			usuarios = sorted(dirnames)
 			
-			# Usuários com poucos animes serão desconsiderados.
-			if sum(notas) < total_animes / 2 + 1:
-				continue
+			inicio = len(usuarios) / 3 * faixa
+			fim = min([inicio + len(usuarios) / 3, len(usuarios)])
 
-			# Lista de animes que serão avaliados para o usuário.
-			animes = []
+			i = 0
+			for usuario in usuarios[inicio:fim][nmin:nmax]:
+				print 'python2.7 tp_aprendizado.py -u "' + usuario + '" -m ' + classificador
+				
+				resultado = str(i) + separador + usuario + separador
+				resultado += subprocess.check_output(["python", "tp_aprendizado.py", "-u", "jusaragu", "-m", "arvore", "-q"]).replace("\n", separador)
+				resultado += "\n"
 
-			# Pegando animes avaliados
-			for i in range(1, total_animes / 2 + 1):
-				if notas[i] > 0:
-					animes.append(random.choice(avaliacoes[i])["url"])
-				else:
-					animes.append(random.choice(avaliacoes[random.choice(notas_existentes)])["url"])
+				f.write(resultado)
 
-			# Pegando animes não avaliados
-			for i in range(1, total_animes / 2 + 1):
-				anime = random.choice(animes_dict.values())
-				while anime in animes:
-					anime = random.choice(animes_dict.values())
-				animes.append(anime)
-			for classificador in ["arvore", "mlp", "naive_bayes"]:
-				print 'python2.7 tp_aprendizado.py -u "' + usuario + '" -m ' + classificador + ' -a "' + " ".join(animes) + '"'
+				i += 1
+
+				#break #apague
 			break
-		break #apague
-	break
+		f.write("\n")
