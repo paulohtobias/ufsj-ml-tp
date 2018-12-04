@@ -8,7 +8,7 @@ import subprocess
 separador = ", "
 
 faixa = 0 # 0, 1 ou 2
-qtd_usuarios = 2
+qtd_usuarios = 50
 
 nmin = 0
 try:
@@ -37,7 +37,7 @@ with open("resultados.csv", "a") as f:
 				print 'python2.7 tp_aprendizado.py -u "' + usuario + '" -m ' + classificador
 				
 				resultado = str(i) + separador + usuario + separador
-				resultado += subprocess.check_output(["python", "tp_aprendizado.py", "-u", "jusaragu", "-m", "arvore", "-q"]).replace("\n", separador)
+				resultado += subprocess.check_output(["python", "tp_aprendizado.py", "-u", usuario, "-m", classificador, "-q"]).replace("\n", separador)
 				resultado += "\n"
 
 				f.write(resultado)
