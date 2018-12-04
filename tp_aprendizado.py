@@ -263,6 +263,9 @@ def arvore_decisao(usuario, atributos_anime = atributos_anime_padrao, atributos_
 	if verbose or teste:
 		max_depth = best_clf.best_params_['max_depth']
 		if teste == False:
+			print "#X:",
+		print len(X.values)
+		if teste == False:
 			print "Accuracy:",
 		print "%0.2f (+/- %0.2f)" % (means[max_depth - 2], stds[max_depth - 2] * 2)
 		if teste == False:
@@ -294,7 +297,6 @@ def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao =
 	X_test = scaler.transform(X_test)
 
 	qtd_atributos = len(atributos_anime) + len(atributos_avaliacao)
-	print qtd_atributos
 
 	import numpy as np
 	parameters = {'solver': ['lbfgs'], 'max_iter': [1000], 'alpha': 10.0 ** -np.arange(4, 7), 'hidden_layer_sizes':np.arange(10, 12), 'random_state':[0,1,2,3,4]}
@@ -304,18 +306,22 @@ def mlp(usuario, atributos_anime = atributos_anime_padrao, atributos_avaliacao =
 	# Resultados
 	means = clf_grid.cv_results_['mean_test_score']
 	stds = clf_grid.cv_results_['std_test_score']
-	if verbose:
+	if verbose or teste:
 		maior = (-1, -1)
 		for mean, std, params in zip(means, stds, clf_grid.cv_results_['params']):
 			if mean > maior[0]:
 				maior = (mean, std)
-			print("%0.3f (+/-%0.03f) for %r"
-				% (mean, std * 2, params))
-		
-		print 'Melhores parametros:', clf_grid.best_params_
+			if teste == False:
+				print("%0.3f (+/-%0.03f) for %r"
+					% (mean, std * 2, params))
+		if teste == False:
+			print 'Melhores parametros:', clf_grid.best_params_
 
 	# Apresentacao dos resultados
 	if verbose or teste:
+		if teste == False:
+			print "#X:",
+		print len(X.values)
 		if teste == False:
 			print "Accuracy:",
 		print "%0.2f (+/- %0.2f)" % maior
@@ -359,18 +365,22 @@ def naive_bayes(usuario, atributos_anime = atributos_anime_padrao, atributos_ava
 	# Resultados
 	means = modelo.cv_results_['mean_test_score']
 	stds = modelo.cv_results_['std_test_score']
-	if verbose:
+	if verbose or teste:
 		maior = (-1, -1)
 		for mean, std, params in zip(means, stds, modelo.cv_results_['params']):
 			if mean > maior[0]:
 				maior = (mean, std)
-			print("%0.3f (+/-%0.03f) for %r"
-				% (mean, std * 2, params))
-		
-		print 'Melhores parametros:', modelo.best_params_
+			if teste == False:
+				print("%0.3f (+/-%0.03f) for %r"
+					% (mean, std * 2, params))
+		if teste == False:
+			print 'Melhores parametros:', modelo.best_params_
 
 	# Apresentacao dos resultados
 	if verbose or teste:
+		if teste == False:
+			print "#X:",
+		print len(X.values)
 		if teste == False:
 			print "Accuracy:",
 		print "%0.2f (+/- %0.2f)" % maior

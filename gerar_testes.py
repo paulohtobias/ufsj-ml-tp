@@ -5,7 +5,7 @@ import random
 import json
 import subprocess
 
-separador = ","
+separador = ", "
 
 faixa = 0 # 0, 1 ou 2
 qtd_usuarios = 2
@@ -25,7 +25,7 @@ print nmin, nmax
 with open("resultados.csv", "a") as f:
 	for classificador in ["arvore", "mlp", "naive_bayes"]:
 		f.write(classificador + "\n")
-		f.write(separador.join(["numero", "username", "accuracy", "score"]) + "\n")
+		f.write(separador.join(["numero", "username", "quantity", "accuracy", "score", "time"]) + "\n")
 		for (dirpath, dirnames, filenames) in os.walk("data/users"):
 			usuarios = sorted(dirnames)
 			
