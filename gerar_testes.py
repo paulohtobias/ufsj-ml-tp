@@ -36,11 +36,15 @@ with open("resultados.csv", "a") as f:
 			for usuario in usuarios[inicio:fim][nmin:nmax]:
 				print 'python2.7 tp_aprendizado.py -u "' + usuario + '" -m ' + classificador
 				
-				resultado = str(i) + separador + usuario + separador
-				resultado += subprocess.check_output(["python", "tp_aprendizado.py", "-u", usuario, "-m", classificador, "-q"]).replace("\n", separador)
-				resultado += "\n"
+				try:
+					resultado = str(i) + separador + usuario + separador
+					resultado += subprocess.check_output(["python", "tp_aprendizado.py", "-u", usuario, "-m", classificador, "-q"]).replace("\n", separador)
+					resultado += "\n"
 
-				f.write(resultado)
+					f.write(resultado)
+				except Exception as e:
+					print "Erro no usuário " + usuario,
+					print e
 
 				i += 1
 
